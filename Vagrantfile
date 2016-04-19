@@ -8,8 +8,12 @@ Vagrant.configure(2) do |node|
   node.ssh.forward_agent = true
 
 
-  # Prevent annoying "stdin: is not a tty" errors from displaying during 'vagrant up'
-  node.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+  #  Prevent annoying "stdin: is not a tty" errors from displaying during 'vagrant up'
+  # See https://github.com/mitchellh/vagrant/issues/1673#issuecomment-168205206
+  node.vm.provision "fix-no-tty", type: "shell" do |s|
+      s.privileged = false
+      s.inline = "sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile"
+  end
 
   node.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
