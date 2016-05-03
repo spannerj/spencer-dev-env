@@ -7,7 +7,8 @@ unless Vagrant.has_plugin?("vagrant-triggers")
 end
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
-DEV_ENV_CONTEXT_FILE = ".dev-env-context"
+# As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
+DEV_ENV_CONTEXT_FILE = File.dirname(__FILE__) + "/.dev-env-context"
 
 Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
