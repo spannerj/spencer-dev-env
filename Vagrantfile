@@ -19,7 +19,7 @@ Vagrant.configure(2) do |config|
   if File.exists?(DEV_ENV_CONTEXT_FILE)
     print "This dev env has been provisioned to run for: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
   else
-    print "What app-grouping do you want?:"
+    print "Please enter the url of your app list:"
     app_grouping = STDIN.gets.chomp
     File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
     config.vm.provision :shell, :inline => "echo You have selected #{app_grouping};", :privileged => false
@@ -30,6 +30,9 @@ Vagrant.configure(2) do |config|
     print "Dumping the DEV_ENV_CONTEXT_FILE before destroying the VM...\n"
     File.delete(DEV_ENV_CONTEXT_FILE)
   end
+
+  # Run script to configure environment
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/provision-environment.sh", :args => [DEV_ENV_CONTEXT_FILE]
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
