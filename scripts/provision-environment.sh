@@ -7,12 +7,11 @@ echo "192.168.249.38 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbml
 chown vagrant:vagrant /home/vagrant/.ssh/known_hosts
 chmod 600 /home/vagrant/.ssh/known_hosts
 
-#Load the content of the file found at /vagrant/$1 where $1 is the first parameter passed to this script. $1 is likely to be ".dev-env-context".
-app_list_url=$(</vagrant/$1)
-
 cd /vagrant
 
+ssh-add -l
+
 #Pull down the app_list specified as the vagrant user.
-su vagrant -c "git clone $app_list_url app_list"
+su vagrant -c "git clone $1 app_list"
 
 

@@ -33,7 +33,11 @@ Vagrant.configure(2) do |config|
   end
 
   # Run script to configure environment
-  config.vm.provision :shell, :inline => "source /vagrant/scripts/provision-environment.sh", :args => [DEV_ENV_CONTEXT_FILE]
+  config.vm.provision "shell" do |s|
+    app_grouping = File.read(DEV_ENV_CONTEXT_FILE)
+    s.inline = "source /vagrant/scripts/provision-environment.sh"
+    s.args = [app_grouping]
+  end
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
