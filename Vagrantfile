@@ -38,6 +38,9 @@ Vagrant.configure(2) do |config|
     s.inline = "source /vagrant/scripts/provision-environment.sh"
     s.args = [app_grouping]
   end
+  
+  # Update Virtualbox Guest Additions
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/setup-vboxguest.sh"
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
