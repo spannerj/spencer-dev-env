@@ -5,6 +5,9 @@
 unless Vagrant.has_plugin?("vagrant-triggers")
   abort("vagrant-triggers is not installed!\nRun...\n    vagrant plugin install vagrant-triggers\nand vagrant up again :)\n")
 end
+unless Vagrant.has_plugin?("vagrant-cachier")
+  abort("vagrant-cachier is not installed!\nRun...\n    vagrant plugin install vagrant-cachier\nand vagrant up again :)\n")
+end
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
 # As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
@@ -15,6 +18,10 @@ Vagrant.configure(2) do |config|
   config.vm.box_version      = "0.3.0"
   config.vm.box_check_update = false
   config.ssh.forward_agent = true
+  
+  # Configure cached packages to be shared between instances of the same base box.
+  # More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
+  config.cache.scope = :box
 
   # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for app_grouping choice on each vagrant up
   if File.exists?(DEV_ENV_CONTEXT_FILE)
