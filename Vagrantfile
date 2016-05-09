@@ -17,16 +17,6 @@ Vagrant.configure(2) do |config|
 
   # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for app_grouping choice on each vagrant up
   if File.exists?(DEV_ENV_CONTEXT_FILE)
-    print "This dev env has been provisioned to run for: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
-  else
-    print "Please enter the url of your app list:"
-    app_grouping = STDIN.gets.chomp
-    File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
-    config.vm.provision :shell, :inline => "echo You have selected #{app_grouping};", :privileged => false
-  end
-
-  # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for app_grouping choice on each vagrant up
-  if File.exists?(DEV_ENV_CONTEXT_FILE)
     print "This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
   else
     print "This is a universal dev env.\n"
