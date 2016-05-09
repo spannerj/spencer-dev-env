@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 require "./scripts/vagrant-plugin-installer.rb"
-project_plugins = ["vagrant-cachier","vagrant-triggers","vagrant-git","vagrant-docker-compose"]
+project_plugins = ["vagrant-cachier","vagrant-triggers","vagrant-git"]
 install_plugins(project_plugins)
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
@@ -23,6 +23,22 @@ Vagrant.configure(2) do |config|
     app_grouping = STDIN.gets.chomp
     File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
     config.vm.provision :shell, :inline => "echo You have selected #{app_grouping};", :privileged => false
+  end
+
+  # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for app_grouping choice on each vagrant up
+  if File.exists?(DEV_ENV_CONTEXT_FILE)
+    print "This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
+  else
+    print "This is a universal dev env.\n"
+    print "Please enter the url of your dev env repo:"
+    app_grouping = STDIN.gets.chomp
+    File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
+    config.git.add_repo do |rc|
+        rc.target = File.read(DEV_ENV_CONTEXT_FILE)
+        rc.path = 'dev-env-project'
+        rc.branch = 'master'
+        rc.clone_in_host = true
+    end
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
