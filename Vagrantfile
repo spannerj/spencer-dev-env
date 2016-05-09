@@ -1,10 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Make sure essential plugins are installed, otherwise force exit
-unless Vagrant.has_plugin?("vagrant-triggers")
-  abort("vagrant-triggers is not installed!\nRun...\n    vagrant plugin install vagrant-triggers\nand vagrant up again :)\n")
-end
+require "./scripts/vagrant-plugin-installer.rb"
+project_plugins = ["vagrant-cachier","vagrant-triggers","vagrant-git","vagrant-docker-compose"]
+install_plugins(project_plugins)
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
 # As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
@@ -38,7 +37,7 @@ Vagrant.configure(2) do |config|
     s.inline = "source /vagrant/scripts/provision-environment.sh"
     s.args = [app_grouping]
   end
-  
+
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/setup-vboxguest.sh"
 
