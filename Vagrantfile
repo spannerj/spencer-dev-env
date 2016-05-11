@@ -1,13 +1,13 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Make sure essential plugins are installed, otherwise force exit
-unless Vagrant.has_plugin?("vagrant-triggers")
-  abort("vagrant-triggers is not installed!\nRun...\n    vagrant plugin install vagrant-triggers\nand vagrant up again :)\n")
+# Make sure essential plugins are installed
+require File.dirname(__FILE__)+"./dependency_manager"
+# If plugins have been installed, rerun the original vagrant command and abandon this one
+if not check_plugins ["vagrant-cachier", "vagrant-triggers"]
+  exec "vagrant #{ARGV.join(" ")}" unless ARGV[0] == 'plugin'
 end
-unless Vagrant.has_plugin?("vagrant-cachier")
-  abort("vagrant-cachier is not installed!\nRun...\n    vagrant plugin install vagrant-cachier\nand vagrant up again :)\n")
-end
+
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
 # As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
