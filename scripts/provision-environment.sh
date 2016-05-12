@@ -28,11 +28,4 @@ echo "192.168.249.38 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbml
 chown vagrant:vagrant /home/vagrant/.ssh/known_hosts
 chmod 600 /home/vagrant/.ssh/known_hosts
 
-cd /vagrant
-
-ssh-add -l
-
-#Pull down the app_list specified as the vagrant user.
-su vagrant -c "git clone $1 app_list"
-
 

@@ -1,3 +1,4 @@
 .vagrant/
 .dev-env-context
 app_list/
+dev-env-project/
