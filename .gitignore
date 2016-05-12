@@ -2,3 +2,5 @@
 .dev-env-context
 app_list/
 dev-env-project/
+.DS_Store
+apps/
