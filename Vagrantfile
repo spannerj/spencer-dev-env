@@ -23,18 +23,19 @@ Vagrant.configure(2) do |config|
   config.cache.scope = :box
 
   # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for app_grouping choice on each vagrant up
-  if File.exists?(DEV_ENV_CONTEXT_FILE)
-    print "This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
-  else
-    print "This is a universal dev env.\n"
-    print "Please enter the url of your dev env repo:"
-    app_grouping = STDIN.gets.chomp
-    File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
-    config.git.add_repo do |rc|
-        rc.target = File.read(DEV_ENV_CONTEXT_FILE)
-        rc.path = 'dev-env-project'
-        rc.branch = 'master'
-        rc.clone_in_host = true
+  config.trigger.before [:up, :resume, :reload] do
+    if File.exists?(DEV_ENV_CONTEXT_FILE)
+      print "This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
+     else
+      print "This is a universal dev env.\n"
+      print "Please enter the url of your dev env repo:"
+      app_grouping = STDIN.gets.chomp
+      File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
+    end
+    # TODO : delete folder before cloning (so vagrant up after first time works)
+    if not system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), 'dev-env-project'
+      puts "Something went wrong when cloning the dev-env configuration project"
+      exit 1
     end
   end
 
