@@ -4,6 +4,7 @@
 # @Last Modified by:   Dev_NIX
 # @Last Modified time: 2016-03-07 16:36:38
 
+
 def check_plugins(dependencies)
     no_missing = true
 	if ['up', 'reload'].include? ARGV[0]
@@ -14,7 +15,7 @@ def check_plugins(dependencies)
 		raw_output = `vagrant plugin list`
 		raw_list = raw_output.split("\n")
 
-		raw_list.each do |plugin| 
+		raw_list.each do |plugin|
 			if plugin.index("\e[0m") != nil
 				first = plugin.index("\e[0m")  + 4
 			else
@@ -30,8 +31,8 @@ def check_plugins(dependencies)
 					puts "\n\033[33m" << " - Could not install plugin '#{dependency}'. " << "\e[0m\033[41m" <<"Stopped." << "\e[0m"
 					exit -1
 				else
-                    no_missing = false
-                end
+            no_missing = false
+        end
 			end
 		end
 
