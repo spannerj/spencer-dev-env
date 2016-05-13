@@ -19,6 +19,13 @@ Vagrant.configure(2) do |config|
   config.vm.box_version      = "0.3.0"
   config.vm.box_check_update = false
   config.ssh.forward_agent = true
+  
+  # Configure cached packages to be shared between instances of the same base box.
+ 	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
+  config.cache.scope       = :box
+  # Make cachier only cache yum instead of rooting about trying to figure things out itself
+  config.cache.auto_detect = false
+  config.cache.enable :yum
 
   #Only if vagrant up/reload/resume do want to create dev-env configuration
   if ['up', 'reload', 'resume'].include? ARGV[0]
@@ -27,7 +34,7 @@ Vagrant.configure(2) do |config|
       puts colorize_lightblue("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
      else
       puts colorize_lightblue("This is a universal dev env.")
-      print colorize_yellow("Please enter the url of your dev env repo: ")
+      print colorize_yellow("Please enter the url of your dev env repo (SSH): ")
       app_grouping = STDIN.gets.chomp
       File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
     end
