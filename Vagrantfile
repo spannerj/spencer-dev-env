@@ -2,7 +2,8 @@
 # vi: set ft=ruby :
 
 # Make sure essential plugins are installed
-require File.dirname(__FILE__)+"/dependency_manager"
+require File.dirname(__FILE__)+"/scripts/dependency_manager"
+require File.dirname(__FILE__)+"/scripts/update_apps"
 # If plugins have been installed, rerun the original vagrant command and abandon this one
 if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
@@ -20,7 +21,7 @@ Vagrant.configure(2) do |config|
 
   #Only if vagrant up/reload/resume do want to create dev-env configuration
   if ['up', 'reload', 'resume'].include? ARGV[0]
-    # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for app_grouping choice on each vagrant up
+    # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       print "This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}\n"
      else
@@ -42,6 +43,9 @@ Vagrant.configure(2) do |config|
       puts "Something went wrong when cloning/pulling the dev-env configuration project"
       exit 1
     end
+
+    #Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
+    update_apps()
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
@@ -56,6 +60,7 @@ Vagrant.configure(2) do |config|
       s.inline = "source /vagrant/scripts/provision-environment.sh"
       s.args = [app_grouping]
   end
+
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/setup-vboxguest.sh"
 
