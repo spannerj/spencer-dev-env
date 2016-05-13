@@ -5,6 +5,8 @@
 require File.dirname(__FILE__)+"/scripts/dependency_manager"
 require File.dirname(__FILE__)+"/scripts/update_apps"
 require File.dirname(__FILE__)+"/scripts/utilities"
+require 'fileutils'
+
 # If plugins have been installed, rerun the original vagrant command and abandon this one
 if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
@@ -40,7 +42,7 @@ Vagrant.configure(2) do |config|
     end
 
     #Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
-    puts colorize_lightblue("Retrieving latest configuration repo files:")
+    puts colorize_lightblue("Retrieving custom configuration repo files:")
     if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
       command_successful = system 'git', '-C', File.dirname(__FILE__) + '/dev-env-project', 'pull'
     else
@@ -60,8 +62,16 @@ Vagrant.configure(2) do |config|
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
   config.trigger.before :destroy do
-    puts "Dumping the DEV_ENV_CONTEXT_FILE before destroying the VM..."
-    File.delete(DEV_ENV_CONTEXT_FILE)
+    confirm = nil
+    until ["Y", "y", "N", "n"].include?(confirm)
+      confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (Y/N) ")
+    end
+    if confirm.upcase == "N"
+      File.delete(DEV_ENV_CONTEXT_FILE)
+      if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
+        FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
+      end
+    end
   end
 
   # Run script to configure environment
