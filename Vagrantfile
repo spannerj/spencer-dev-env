@@ -7,6 +7,16 @@ require File.dirname(__FILE__)+"/scripts/update_apps"
 require File.dirname(__FILE__)+"/scripts/utilities"
 require 'fileutils'
 
+# If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
+# so that the up trigger works and we can do stuff while the machine is stopped
+if ['reload'].include? ARGV[0]
+  ARGV.shift # Remove the reload command
+  puts colorize_lightblue("Vagrant reload detected. I'm going to do a separate halt/up instead.")
+  # These have to be separate commands else ruby complains on the up
+  system ("vagrant halt")
+  exec "vagrant up #{ARGV.join(' ')}"
+end
+
 # If plugins have been installed, rerun the original vagrant command and abandon this one
 if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
@@ -29,12 +39,12 @@ Vagrant.configure(2) do |config|
   config.cache.auto_detect = false
   config.cache.enable :yum
 
-  #Only if vagrant up/reload/resume do want to create dev-env configuration
-  if ['up', 'reload', 'resume'].include? ARGV[0]
+  #Only if vagrant up/resume do we want to create dev-env configuration
+  config.trigger.before [:up, :resume] do
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_lightblue("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
-     else
+    else
       puts colorize_lightblue("This is a universal dev env.")
       print colorize_yellow("Please enter the url of your dev env repo (SSH): ")
       app_grouping = STDIN.gets.chomp
@@ -59,7 +69,7 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
   end
-
+  
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
   config.trigger.before :destroy do
     confirm = nil
