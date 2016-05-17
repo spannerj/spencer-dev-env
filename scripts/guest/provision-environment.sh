@@ -5,7 +5,7 @@ HOME='/home/vagrant'
 sed -i -e 's/.*PS1.*//' ${HOME}/.bash_profile
 # Now add our own customisation:
 # \033[X;XXm sets a colour
-# \w prints the current path 
+# \w prints the current path
 # \$ shows the appropriate cursor depending on what type of user is logged in.
 echo 'export PS1=" \033[1;34mDEVENV \033[0;35m\w \033[1;31m\$ \033[0m"' >> ${HOME}/.bash_profile
 
@@ -17,15 +17,3 @@ echo 'cd /vagrant; # switch to workspace' >> ${HOME}/.bash_profile
 # Update all packages (except kernel files - prevents guest additions breakage)
 echo 'Updating all currently installed non-kernel packages'
 yum -y -q --exclude=kernel\* update
-
-#Install git so that the app-groupings repo and ultimately the apps can be cloned/pulled into the environment
-echo 'Installing git'
-yum -y -q install git
-
-echo 'Setting up SSH keys'
-#Add AWS Gitlab to the known_hosts file
-echo "192.168.249.38 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBD/rQkp8cBGqVj4mNG9I6nx2w4gzpG61dUj9VnREKpIE9iaDbC9BoeOE48zCzkT+uBk0c+acvEu5dlivgREgkJM=" > /home/vagrant/.ssh/known_hosts
-chown vagrant:vagrant /home/vagrant/.ssh/known_hosts
-chmod 600 /home/vagrant/.ssh/known_hosts
-
-
