@@ -8,7 +8,7 @@ enabled=1
 gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
-yum -y install docker-engine
+yum -y -q install docker-engine
 service docker start
 chkconfig docker on
 usermod -a -G docker vagrant
@@ -20,7 +20,7 @@ chmod 755 /usr/local/bin/docker-compose
 export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
 echo "- - - Removing any existing containers (and their data volumes) - - -"
-docker-compose -f /vagrant/scripts/guest/docker-compose.yml rm -v -f
+docker-compose -f /vagrant/scripts/guest/docker/docker-compose.yml rm -v -f
 images=$(docker images -f "dangling=true" -q)
 if [ -n "$images" ]; then
   echo "- - - Removing orphaned docker images - - -"

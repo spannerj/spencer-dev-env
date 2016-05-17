@@ -4,3 +4,4 @@ app_list/
 dev-env-project/
 .DS_Store
 apps/
+docker_storage.vdi

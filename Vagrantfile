@@ -18,7 +18,7 @@ if ['reload'].include? ARGV[0]
 end
 
 # If plugins have been installed, rerun the original vagrant command and abandon this one
-if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
+if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
 end
 
@@ -38,6 +38,12 @@ Vagrant.configure(2) do |config|
   # Make cachier only cache yum instead of rooting about trying to figure things out itself
   config.cache.auto_detect = false
   config.cache.enable :yum
+
+  # Docker persistent storage (cachier can't cope)
+  config.persistent_storage.enabled = true
+  config.persistent_storage.location = "docker_storage.vdi"
+  config.persistent_storage.size = 50000
+  config.persistent_storage.mountpoint = '/var/lib/docker'
 
   #Only if vagrant up/resume do we want to create dev-env configuration
   config.trigger.before [:up, :resume] do
@@ -88,12 +94,17 @@ Vagrant.configure(2) do |config|
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/provision-environment.sh"
 
   # Install docker and docker-compose
-  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/install-docker.sh"
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/install-docker.sh"
+
+  # Install docker and docker-compose
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
 
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
-  #Reload VM after Guest Additions have been installed, so that shared folders work
+  #Reload VM after Guest Additions have been installed, so that shared folders work.
+  #Always force reload last, after every provisioner has run, otherwise if a provisioner
+  #is set to always run it will get run twice.
   config.vm.provision :reload
 
   config.vm.provider :virtualbox do |vb|
