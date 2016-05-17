@@ -5,6 +5,7 @@
 require File.dirname(__FILE__)+"/scripts/host/dependency_manager"
 require File.dirname(__FILE__)+"/scripts/host/update_apps"
 require File.dirname(__FILE__)+"/scripts/host/utilities"
+require File.dirname(__FILE__)+"/scripts/host/preparing_docker_compose"
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -74,6 +75,10 @@ Vagrant.configure(2) do |config|
     #Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
+    
+    # Call the ruby function to create the docker compose file containing the apps and their dependencies
+    puts colorize_lightblue("Creating docker-compose")
+    prepare_compose(File.dirname(__FILE__))
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
