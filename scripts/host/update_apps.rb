@@ -63,5 +63,5 @@ def update_apps(root_loc)
 end
 
 if __FILE__ == $0
-  update_apps(File.dirname(__FILE__) + "../")
+  update_apps(File.dirname(__FILE__) + "../../")
 end
