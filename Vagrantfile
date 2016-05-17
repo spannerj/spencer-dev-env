@@ -2,9 +2,9 @@
 # vi: set ft=ruby :
 
 # Make sure essential plugins are installed
-require File.dirname(__FILE__)+"/scripts/dependency_manager"
-require File.dirname(__FILE__)+"/scripts/update_apps"
-require File.dirname(__FILE__)+"/scripts/utilities"
+require File.dirname(__FILE__)+"/scripts/host/dependency_manager"
+require File.dirname(__FILE__)+"/scripts/host/update_apps"
+require File.dirname(__FILE__)+"/scripts/host/utilities"
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -31,7 +31,7 @@ Vagrant.configure(2) do |config|
   config.vm.box_version      = "0.3.0"
   config.vm.box_check_update = false
   config.ssh.forward_agent = true
-  
+
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
   config.cache.scope       = :box
@@ -69,7 +69,7 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
   end
-  
+
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
   config.trigger.before :destroy do
     confirm = nil
@@ -85,14 +85,13 @@ Vagrant.configure(2) do |config|
   end
 
   # Run script to configure environment
-  config.vm.provision "shell" do |s|
-      app_grouping = File.read(DEV_ENV_CONTEXT_FILE)
-      s.inline = "source /vagrant/scripts/provision-environment.sh"
-      s.args = [app_grouping]
-  end
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/provision-environment.sh"
+
+  # Install docker and docker-compose
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/install-docker.sh"
 
   # Update Virtualbox Guest Additions
-  config.vm.provision :shell, :inline => "source /vagrant/scripts/setup-vboxguest.sh"
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
   #Reload VM after Guest Additions have been installed, so that shared folders work
   config.vm.provision :reload

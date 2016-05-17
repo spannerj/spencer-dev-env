@@ -10,24 +10,24 @@ def update_apps(root_loc)
 
   config["applications"].each do |appname, appconfig|
     puts colorize_green("================== #{appname} ==================")
-    
+
     # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
     if Dir.exists?("#{root_loc}/apps/#{appname}")
       # The app already exists, we must have cloned it before
       puts colorize_lightblue("The repo directory for this app already exists, so I will try to update it")
-      
+
       # What branch are we working on?
       current_branch = `git -C #{root_loc}/apps/#{appname} rev-parse --abbrev-ref HEAD`.strip
       # Check for a detached head scenario (i.e. a specific commit) - technically there is therefore no branch
       if current_branch.eql? 'HEAD' then current_branch = 'detached' end
-      
+
       # If the user is working in another branch, leave them be
       required_branch = appconfig['branch']
       if not current_branch.eql? required_branch
         puts colorize_yellow("The current branch (#{current_branch}) differs from the devenv configuration (#{required_branch}) so I'm not going to update anything")
         next # Skip to next app
       end
-      
+
       # Update all the remote branches (this will not change the local branch, we'll do that further down')
       if not system 'git', '-C', "#{root_loc}/apps/#{appname}", 'fetch', 'origin'
         # If there is a git error we shouldn't continue
@@ -44,7 +44,7 @@ def update_apps(root_loc)
       end
       # What branch are we working on?
       current_branch = `git -C #{root_loc}/apps/#{appname} rev-parse --abbrev-ref HEAD`.strip
-      
+
       # If we have to, create a new tracked local branch that matches the one specified in the config and switch to it
       required_branch = appconfig['branch']
       if not current_branch.eql? required_branch
@@ -63,5 +63,5 @@ def update_apps(root_loc)
 end
 
 if __FILE__ == $0
-  update_apps(File.dirname(__FILE__) + "../")
+  update_apps(File.dirname(__FILE__) + "../../")
 end
