@@ -12,6 +12,7 @@ sed -i -e 's/.*COMPOSE_FILE.*//' ${HOME}/.bash_profile
 echo "export COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME'" >> ${HOME}/.bash_profile
 echo "export COMPOSE_FILE='$COMPOSE_FILE'" >> ${HOME}/.bash_profile
 
+#TODO if docker list empty, don't do docker stuff'
 
 echo "- - - (Re)building container images (volumes kept) - - -"
 /usr/local/bin/docker-compose build
