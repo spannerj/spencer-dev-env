@@ -75,7 +75,7 @@ Vagrant.configure(2) do |config|
     #Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
-    
+
     # Call the ruby function to create the docker compose file containing the apps and their dependencies
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
@@ -111,6 +111,9 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
+
+  #Used to expose rabbitmq management app to host
+  config.vm.network :forwarded_port, guest: 15672, host: 15673
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)

@@ -2,6 +2,6 @@ version: '2'
 services:
   postgres:
     container_name: postgres
-    build: .
+    build: /vagrant/scripts/guest/docker/postgres/
     ports:
       - "5432:5432"
