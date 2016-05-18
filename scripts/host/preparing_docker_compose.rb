@@ -10,7 +10,7 @@ def prepare_compose(root_loc)
   dependency_list = []
   config["applications"].each do |appname, appconfig|
     appconfig["dependencies"].each do |dependency|
-      dependency_list.push("-f /vagrant/scripts/guest/docker/#{dependency}/docker-compose-fragment.yml")
+      dependency_list.push("/vagrant/scripts/guest/docker/#{dependency}/docker-compose-fragment.yml")
     end
   end
 
@@ -18,5 +18,5 @@ def prepare_compose(root_loc)
   dependency_list = dependency_list.uniq
 
   # Put the compose arguments into a file for later retrieval
-  File.open("#{root_loc}/.docker-compose-file-list", 'w') {|f| f.write(dependency_list.join(" "))}
+  File.open("#{root_loc}/.docker-compose-file-list", 'w') {|f| f.write(dependency_list.join(":"))}
 end
