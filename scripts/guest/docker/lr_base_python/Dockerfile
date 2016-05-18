@@ -27,10 +27,4 @@ RUN yum -q -y update && \
 RUN yum install -y https://raw.githubusercontent.com/LandRegistry-Ops/puppet-control/development/site/profiles/files/lr-python3-3.4.3-1.x86_64.rpm && \
   pip3 install --upgrade pip
 
-# App images that extend this image will need to make sure this will run!! Or override it
-# * Assumes application source made available in src
-# * Eventlet used as an asycnhronous worker
-# * Access logfile rerouted to stderr
-# * Assumes entry point is application:app
-# * Enables auto reload on file change 
-CMD ["/usr/local/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "application:app", "--reload"]
+CMD /bin/bash /src/run.sh
