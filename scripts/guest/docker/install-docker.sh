@@ -21,7 +21,6 @@ export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
 
 echo "- - - Removing any existing containers (and their data volumes) - - -"
-# TODO fix
 docker ps -a -q | xargs docker rm -v -f
 
 images=$(docker images -f "dangling=true" -q)
