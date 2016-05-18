@@ -1,8 +1,7 @@
 version: '2'
-
 services:
   postgres:
     container_name: postgres
-    build: /vagrant/scripts/guest/docker/postgres
+    build: .
     ports:
       - "5432:5432"

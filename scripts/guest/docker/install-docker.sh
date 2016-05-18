@@ -19,8 +19,10 @@ curl -L https://github.com/docker/compose/releases/download/1.7.0/docker-compose
 chmod 755 /usr/local/bin/docker-compose
 export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
+
 echo "- - - Removing any existing containers (and their data volumes) - - -"
-docker-compose -f /vagrant/scripts/guest/docker/docker-compose.yml rm -v -f
+docker ps -a -q | xargs docker rm -v -f
+
 images=$(docker images -f "dangling=true" -q)
 if [ -n "$images" ]; then
   echo "- - - Removing orphaned docker images - - -"
