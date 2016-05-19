@@ -87,19 +87,10 @@ Vagrant.configure(2) do |config|
     # This only happens once, so to rerun it if it changes, the postgres container and it's volume will need to be removed first.
     # Either via 1) 'docker rm -v -f postgres' followed by a ( a) docker-compose up --build, or b) vagrant reload if the app configs need reparsing),
     # or 2) a vagrant reload --provision (but this will wipe ALL containers)
-    puts colorize_lightblue("Gathering postgres initialisation SQL from the apps")
     prepare_postgres(File.dirname(__FILE__))
     
-    # Call the ruby function to get the ports of the apps and dependencies on the host
-    port_list = get_port_list(File.dirname(__FILE__))
-
-    # If applications have ports assigned, let's map these to the host machine
-    puts colorize_lightblue("Exposing ports #{port_list}")
-    port_list.each do |port|
-      host_port = port.split(":")[0].to_i
-      guest_port = port.split(":")[1].to_i
-      config.vm.network :forwarded_port, guest: guest_port, host: host_port
-    end
+    # Find the ports of the apps and dependencies on the host and add port forwards for them
+    create_port_forwards(File.dirname(__FILE__), config)
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
