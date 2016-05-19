@@ -5,7 +5,7 @@ def prepare_compose(root_loc)
   root_loc = root_loc
   # Load configuration.yml into a Hash
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
-  
+
   # Put all the dependencies for all apps into an array, as their compose file argument
   dependency_list = []
   config["applications"].each do |appname, appconfig|

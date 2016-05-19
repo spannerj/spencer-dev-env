@@ -2,10 +2,11 @@
 # vi: set ft=ruby :
 
 # Make sure essential plugins are installed
-require File.dirname(__FILE__)+"/scripts/host/dependency_manager"
+require File.dirname(__FILE__)+"/scripts/host/plugin_manager"
 require File.dirname(__FILE__)+"/scripts/host/update_apps"
 require File.dirname(__FILE__)+"/scripts/host/utilities"
 require File.dirname(__FILE__)+"/scripts/host/preparing_docker_compose"
+require File.dirname(__FILE__)+"/scripts/host/get_ports_to_expose"
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -81,6 +82,16 @@ Vagrant.configure(2) do |config|
     prepare_compose(File.dirname(__FILE__))
   end
 
+  # Call the ruby function to get the ports of the apps and dependencies on the host
+  port_list = get_port_list(File.dirname(__FILE__))
+
+  # If applications have ports assigned, let's map these to the host machine
+  puts colorize_lightblue("Exposing ports #{port_list}")
+  port_list.each do |port|
+    port = port.to_i
+    config.vm.network :forwarded_port, guest: port, host: port
+  end
+
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
   config.trigger.before :destroy do
     confirm = nil
@@ -111,9 +122,6 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
-
-  #Used to expose rabbitmq management app to host
-  config.vm.network :forwarded_port, guest: 15672, host: 15673
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
