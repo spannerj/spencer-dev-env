@@ -50,7 +50,7 @@ Vagrant.configure(2) do |config|
   config.persistent_storage.mountpoint = '/var/lib/docker'
 
   #Only if vagrant up/resume do we want to create dev-env configuration
-  config.trigger.before [:up, :resume] do
+  if ['up', 'resume'].include? ARGV[0]
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_lightblue("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
@@ -89,17 +89,17 @@ Vagrant.configure(2) do |config|
     # or 2) a vagrant reload --provision (but this will wipe ALL containers)
     puts colorize_lightblue("Gathering postgres initialisation SQL from the apps")
     prepare_postgres(File.dirname(__FILE__))
-  end
+    
+    # Call the ruby function to get the ports of the apps and dependencies on the host
+    port_list = get_port_list(File.dirname(__FILE__))
 
-  # Call the ruby function to get the ports of the apps and dependencies on the host
-  port_list = get_port_list(File.dirname(__FILE__))
-
-  # If applications have ports assigned, let's map these to the host machine
-  puts colorize_lightblue("Exposing ports #{port_list}")
-  port_list.each do |port|
-    host_port = port.split(":")[0].to_i
-    guest_port = port.split(":")[1].to_i
-    config.vm.network :forwarded_port, guest: guest_port, host: host_port
+    # If applications have ports assigned, let's map these to the host machine
+    puts colorize_lightblue("Exposing ports #{port_list}")
+    port_list.each do |port|
+      host_port = port.split(":")[0].to_i
+      guest_port = port.split(":")[1].to_i
+      config.vm.network :forwarded_port, guest: guest_port, host: host_port
+    end
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
