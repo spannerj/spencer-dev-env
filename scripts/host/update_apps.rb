@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require File.dirname(__FILE__)+'/utilities'
+require_relative 'utilities'
 
 def update_apps(root_loc)
   require 'yaml'

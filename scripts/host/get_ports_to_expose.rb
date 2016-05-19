@@ -4,7 +4,7 @@ require_relative 'utilities'
 
 def create_port_forwards(root_loc, vagrantconfig)
   port_list = get_port_list(root_loc)
-  puts colorize_lightblue("Exposing ports #{port_list}")
+  puts colorize_pink("Exposing ports #{port_list}")
   # If applications have ports assigned, let's map these to the host machine
   port_list.each do |port|
     host_port = port.split(":")[0].to_i
