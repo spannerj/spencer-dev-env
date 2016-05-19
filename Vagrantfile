@@ -5,10 +5,10 @@
 require_relative 'scripts/host/plugin_manager'
 require_relative 'scripts/host/update_apps'
 require_relative 'scripts/host/utilities'
-require_relative 'scripts/host/preparing_docker_compose'
-require_relative 'scripts/host/get_ports_to_expose'
-require_relative 'scripts/host/preparing_postgres_init'
-require_relative 'scripts/host/running_alembic_provision'
+require_relative 'scripts/host/docker_compose'
+require_relative 'scripts/host/expose_ports'
+require_relative 'scripts/host/postgres_init'
+require_relative 'scripts/host/alembic_provision'
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
