@@ -44,7 +44,7 @@ def get_port_list(root_loc)
 
   #If rabbitmq is being used then expose the rabbitmq admin port
   if dependency_list.include? "rabbitmq"
-    port_list.push("15672:15672")
+    port_list.push("25672:15672")
   end
 
   return port_list
