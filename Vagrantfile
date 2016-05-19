@@ -6,6 +6,8 @@ require File.dirname(__FILE__)+"/scripts/host/dependency_manager"
 require File.dirname(__FILE__)+"/scripts/host/update_apps"
 require File.dirname(__FILE__)+"/scripts/host/utilities"
 require File.dirname(__FILE__)+"/scripts/host/preparing_docker_compose"
+require File.dirname(__FILE__)+"/scripts/host/preparing_postgres_init"
+require File.dirname(__FILE__)+"/scripts/host/running_alembic_provision"
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -42,7 +44,7 @@ Vagrant.configure(2) do |config|
 
   # Docker persistent storage (cachier can't cope)
   config.persistent_storage.enabled = true
-  config.persistent_storage.location = "docker_storage.vdi"
+  config.persistent_storage.location = File.dirname(__FILE__) + "/docker_storage.vdi"
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
 
@@ -75,10 +77,17 @@ Vagrant.configure(2) do |config|
     #Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
-    
+
     # Call the ruby function to create the docker compose file containing the apps and their dependencies
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
+    
+    # Call the ruby function to check the apps for an SQL snippet to add to the SQL that gets run when the postgres container starts up.
+    # This only happens once, so to rerun it if it changes, the postgres container and it's volume will need to be removed first.
+    # Either via 1) 'docker rm -v -f postgres' followed by a ( a) docker-compose up --build, or b) vagrant reload if the app configs need reparsing), 
+    # or 2) a vagrant reload --provision (but this will wipe ALL containers)
+    puts colorize_lightblue("Gathering postgres initialisation SQL from the apps")
+    prepare_postgres(File.dirname(__FILE__))
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
@@ -103,7 +112,7 @@ Vagrant.configure(2) do |config|
 
   # Install docker and docker-compose
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
-
+ 
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
@@ -111,6 +120,15 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
+  
+  # Once the machine is fully configured and (re)started, run some more stuff
+  config.trigger.after [:up, :resume] do
+    # Alembic
+    provision_alembic(File.dirname(__FILE__))
+  end
+
+  #Used to expose rabbitmq management app to host
+  config.vm.network :forwarded_port, guest: 15672, host: 15673
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
