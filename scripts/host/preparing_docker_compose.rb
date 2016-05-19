@@ -14,8 +14,10 @@ def prepare_compose(root_loc)
       dependency_list.push("/vagrant/apps/#{appname}/docker-compose-fragment.yml")
     end
     # Load any dependencies into the docker compose list
-    appconfig["dependencies"].each do |dependency|
-      dependency_list.push("/vagrant/scripts/guest/docker/#{dependency}/docker-compose-fragment.yml")
+    if appconfig.key?("dependencies")
+      appconfig["dependencies"].each do |dependency|
+        dependency_list.push("/vagrant/scripts/guest/docker/#{dependency}/docker-compose-fragment.yml")
+      end
     end
   end
 

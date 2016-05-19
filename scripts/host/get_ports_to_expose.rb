@@ -10,28 +10,32 @@ def get_port_list(root_loc)
   port_list = []
   dependency_list = []
 
-  config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
+  if File.exists?("#{root_loc}/dev-env-project/configuration.yml")
+    config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
 
-  # Loop through the apps, find the compose fragment, find the host port within
-  # the fragment add it to port_list
-  config["applications"].each do |appname, appconfig|
-    # If this app is docker, add it's compose to the list
-    if File.exists?("#{root_loc}/apps/#{appname}/docker-compose-fragment.yml")
-      compose_file = YAML.load_file("#{root_loc}/apps/#{appname}/docker-compose-fragment.yml")
+    # Loop through the apps, find the compose fragment, find the host port within
+    # the fragment add it to port_list
+    config["applications"].each do |appname, appconfig|
+      # If this app is docker, add it's compose to the list
+      if File.exists?("#{root_loc}/apps/#{appname}/docker-compose-fragment.yml")
+        compose_file = YAML.load_file("#{root_loc}/apps/#{appname}/docker-compose-fragment.yml")
 
-      compose_file["services"].each do |composeappname, composeappconfig|
-        # If the compose file has a port section
-        if composeappconfig.key?("ports")
-          # Currently assumes there is only one port to forward and that the
-          # first port in the string "port_number1:port_number2" is the host port
-          app_host_port = composeappconfig["ports"][0].split(":")[0]
-          port_list.push("#{app_host_port}:#{app_host_port}")
+        compose_file["services"].each do |composeappname, composeappconfig|
+          # If the compose file has a port section
+          if composeappconfig.key?("ports")
+            # Currently assumes there is only one port to forward and that the
+            # first port in the string "port_number1:port_number2" is the host port
+            app_host_port = composeappconfig["ports"][0].split(":")[0]
+            port_list.push("#{app_host_port}:#{app_host_port}")
+          end
         end
       end
-    end
 
-    appconfig["dependencies"].each do |dependency|
-      dependency_list.push(dependency)
+      if appconfig.key?("dependencies")
+        appconfig["dependencies"].each do |dependency|
+          dependency_list.push(dependency)
+        end
+      end
     end
   end
 
