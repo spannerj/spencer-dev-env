@@ -25,7 +25,7 @@ def get_port_list(root_loc)
           # Currently assumes there is only one port to forward and that the
           # first port in the string "port_number1:port_number2" is the host port
           app_host_port = composeappconfig["ports"][0].split(":")[0]
-          port_list.push(app_host_port)
+          port_list.push("#{app_host_port}:#{app_host_port}")
         end
       end
     end
@@ -39,12 +39,12 @@ def get_port_list(root_loc)
   dependency_list = dependency_list.uniq
 
   if dependency_list.include? "postgres"
-    port_list.push("15432")
+    port_list.push("15432:5432")
   end
 
   #If rabbitmq is being used then expose the rabbitmq admin port
   if dependency_list.include? "rabbitmq"
-    port_list.push("15672")
+    port_list.push("15672:15672")
   end
 
   return port_list
