@@ -8,6 +8,7 @@ require File.dirname(__FILE__)+"/scripts/host/utilities"
 require File.dirname(__FILE__)+"/scripts/host/preparing_docker_compose"
 require File.dirname(__FILE__)+"/scripts/host/get_ports_to_expose"
 require File.dirname(__FILE__)+"/scripts/host/preparing_postgres_init"
+require File.dirname(__FILE__)+"/scripts/host/running_alembic_provision"
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -123,7 +124,7 @@ Vagrant.configure(2) do |config|
 
   # Install docker and docker-compose
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
-
+ 
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
@@ -131,6 +132,12 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
+  
+  # Once the machine is fully configured and (re)started, run some more stuff
+  config.trigger.after [:up, :resume] do
+    # Alembic
+    provision_alembic(File.dirname(__FILE__))
+  end
 
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)

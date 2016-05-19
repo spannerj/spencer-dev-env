@@ -14,8 +14,17 @@ echo "export COMPOSE_FILE='$COMPOSE_FILE'" >> ${HOME}/.bash_profile
 
 #TODO if docker list empty, don't do docker stuff'
 
-echo "- - - (Re)building container images (volumes kept) - - -"
+echo "- - - (Re)building docker container images (volumes kept) - - -"
 /usr/local/bin/docker-compose build
 
-echo "- - - Creating and launching containers - - -"
+echo "- - - Creating and launching docker containers - - -"
 /usr/local/bin/docker-compose up --no-build -d
+
+echo "- - - Removing any orphaned docker volumes - - -"
+docker volume ls -qf dangling=true | xargs -r docker volume rm
+
+echo "- - - Removing any orphaned docker images - - -"
+images=$(docker images -f "dangling=true" -q)
+if [ -n "$images" ]; then
+  docker rmi $images
+fi
