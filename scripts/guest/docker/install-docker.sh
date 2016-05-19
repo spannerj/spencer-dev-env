@@ -20,12 +20,12 @@ chmod 755 /usr/local/bin/docker-compose
 export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
 
-echo "- - - Removing any existing containers (and their data volumes) - - -"
+echo "- - - Removing all existing docker containers (and their data volumes) - - -"
 docker ps -a -q | xargs docker rm -v -f
 
+echo "- - - Removing any orphaned docker images - - -"
 images=$(docker images -f "dangling=true" -q)
 if [ -n "$images" ]; then
-  echo "- - - Removing orphaned docker images - - -"
   docker rmi $images
 fi
 
