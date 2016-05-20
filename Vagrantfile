@@ -2,13 +2,13 @@
 # vi: set ft=ruby :
 
 # Make sure essential plugins are installed
-require File.dirname(__FILE__)+"/scripts/host/plugin_manager"
-require File.dirname(__FILE__)+"/scripts/host/update_apps"
-require File.dirname(__FILE__)+"/scripts/host/utilities"
-require File.dirname(__FILE__)+"/scripts/host/preparing_docker_compose"
-require File.dirname(__FILE__)+"/scripts/host/get_ports_to_expose"
-require File.dirname(__FILE__)+"/scripts/host/preparing_postgres_init"
-require File.dirname(__FILE__)+"/scripts/host/running_alembic_provision"
+require_relative 'scripts/host/plugin_manager'
+require_relative 'scripts/host/update_apps'
+require_relative 'scripts/host/utilities'
+require_relative 'scripts/host/docker_compose'
+require_relative 'scripts/host/expose_ports'
+require_relative 'scripts/host/postgres_init'
+require_relative 'scripts/host/alembic_provision'
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -50,7 +50,7 @@ Vagrant.configure(2) do |config|
   config.persistent_storage.mountpoint = '/var/lib/docker'
 
   #Only if vagrant up/resume do we want to create dev-env configuration
-  config.trigger.before [:up, :resume] do
+  if ['up', 'resume'].include? ARGV[0]
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_lightblue("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
@@ -87,19 +87,10 @@ Vagrant.configure(2) do |config|
     # This only happens once, so to rerun it if it changes, the postgres container and it's volume will need to be removed first.
     # Either via 1) 'docker rm -v -f postgres' followed by a ( a) docker-compose up --build, or b) vagrant reload if the app configs need reparsing),
     # or 2) a vagrant reload --provision (but this will wipe ALL containers)
-    puts colorize_lightblue("Gathering postgres initialisation SQL from the apps")
     prepare_postgres(File.dirname(__FILE__))
-  end
-
-  # Call the ruby function to get the ports of the apps and dependencies on the host
-  port_list = get_port_list(File.dirname(__FILE__))
-
-  # If applications have ports assigned, let's map these to the host machine
-  puts colorize_lightblue("Exposing ports #{port_list}")
-  port_list.each do |port|
-    host_port = port.split(":")[0].to_i
-    guest_port = port.split(":")[1].to_i
-    config.vm.network :forwarded_port, guest: guest_port, host: host_port
+    
+    # Find the ports of the apps and dependencies on the host and add port forwards for them
+    create_port_forwards(File.dirname(__FILE__), config)
   end
 
   # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning

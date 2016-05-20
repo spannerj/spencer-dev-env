@@ -2,7 +2,19 @@
 
 require_relative 'utilities'
 
+def create_port_forwards(root_loc, vagrantconfig)
+  port_list = get_port_list(root_loc)
+  puts colorize_pink("Exposing ports #{port_list}")
+  # If applications have ports assigned, let's map these to the host machine
+  port_list.each do |port|
+    host_port = port.split(":")[0].to_i
+    guest_port = port.split(":")[1].to_i
+    vagrantconfig.vm.network :forwarded_port, guest: guest_port, host: host_port
+  end
+end
+
 def get_port_list(root_loc)
+  puts colorize_lightblue("Searching for ports to forward")
   require 'yaml'
   root_loc = root_loc
 

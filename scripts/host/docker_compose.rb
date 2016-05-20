@@ -1,4 +1,4 @@
-require File.dirname(__FILE__)+'/utilities'
+require_relative 'utilities'
 
 def prepare_compose(root_loc)
   require 'yaml'

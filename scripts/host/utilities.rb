@@ -15,3 +15,7 @@ end
 def colorize_green(str)
     "\e[32m#{str}\e[0m"
 end
+
+def colorize_pink(str)
+    "\e[35m#{str}\e[0m"
+end
