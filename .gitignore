@@ -1,1 +1,8 @@
 .vagrant/
+.dev-env-context
+dev-env-project/
+.DS_Store
+apps/
+docker_storage.vdi
+.docker-compose-file-list
+scripts/guest/docker/postgres/init.sql
