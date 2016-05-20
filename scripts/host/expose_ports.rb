@@ -63,6 +63,10 @@ def get_port_list(root_loc)
     port_list.push("25672:15672")
   end
 
+  if dependency_list.include? "db2"
+    port_list.push("50000:50000")
+  end
+
   return port_list
 end
 
