@@ -19,6 +19,10 @@ def prepare_postgres(root_loc)
     end
   end
   
+  # This will be checked for later on before alembic runs.
+  # Using a custom database to decide if the initialisation script has finished running is pretty horrible but it's the only way I can see to do it
+  File.open("#{root_loc}/scripts/guest/docker/postgres/init.sql", 'a') { |file| file.write("CREATE DATABASE initfinished;") }
+  
   
 
 end
