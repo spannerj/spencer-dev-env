@@ -66,6 +66,11 @@ def get_port_list(root_loc)
   if dependency_list.include? "db2"
     port_list.push("50000:50000")
   end
+  
+  if dependency_list.include? "elasticsearch"
+    port_list.push("19200:9200")
+    port_list.push("19300:9300")
+  end
 
   return port_list
 end
