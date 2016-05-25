@@ -9,6 +9,8 @@ require_relative 'scripts/host/docker_compose'
 require_relative 'scripts/host/expose_ports'
 require_relative 'scripts/host/postgres_init'
 require_relative 'scripts/host/alembic_provision'
+require_relative 'scripts/host/db2_provision'
+require_relative 'scripts/host/dependencies'
 require_relative 'scripts/host/elasticsearch_provision'
 require 'fileutils'
 
@@ -80,6 +82,10 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
 
+    # Create a file called .dependencies.yml with the list of dependencies in it
+    puts colorize_lightblue("Creating list of dependencies")
+    create_dependencies_list(File.dirname(__FILE__))
+
     # Call the ruby function to create the docker compose file containing the apps and their dependencies
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
@@ -94,8 +100,9 @@ Vagrant.configure(2) do |config|
     create_port_forwards(File.dirname(__FILE__), config)
   end
 
-  # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
+  # In the event of user requesting a vagrant destroy
   config.trigger.before :destroy do
+    # remove DEV_ENV_CONTEXT_FILE created on provisioning
     confirm = nil
     until ["Y", "y", "N", "n"].include?(confirm)
       confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (Y/N) ")
@@ -106,6 +113,10 @@ Vagrant.configure(2) do |config|
         FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
       end
     end
+    # remove .dependencies.yml created on provisioning
+    if Dir.exists?(File.dirname(__FILE__) + '/.dependencies.yml')
+      FileUtils.rm_r File.dirname(__FILE__) + '/.dependencies.yml'
+  end
   end
 
   # Run script to configure environment
@@ -114,7 +125,7 @@ Vagrant.configure(2) do |config|
   # Install docker and docker-compose
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/install-docker.sh"
 
-  # Install docker and docker-compose
+  # Build and start all the containers
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
  
   # Update Virtualbox Guest Additions
@@ -129,6 +140,8 @@ Vagrant.configure(2) do |config|
   config.trigger.after [:up, :resume] do
     # Alembic
     provision_alembic(File.dirname(__FILE__))
+    # Run app DB2 SQL statements
+    provision_db2(File.dirname(__FILE__))
     # Elasticsearch
     provision_elasticsearch(File.dirname(__FILE__))
   end
