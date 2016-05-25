@@ -83,7 +83,7 @@ Vagrant.configure(2) do |config|
 
     # Create a file called .dependencies.yml with the list of dependencies in it
     puts colorize_lightblue("Creating list of dependencies")
-    get_dependencies_list(File.dirname(__FILE__))
+    create_dependencies_list(File.dirname(__FILE__))
 
     # Call the ruby function to create the docker compose file containing the apps and their dependencies
     puts colorize_lightblue("Creating docker-compose")
@@ -99,8 +99,9 @@ Vagrant.configure(2) do |config|
     create_port_forwards(File.dirname(__FILE__), config)
   end
 
-  # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
+  # In the event of user requesting a vagrant destroy
   config.trigger.before :destroy do
+    # remove DEV_ENV_CONTEXT_FILE created on provisioning
     confirm = nil
     until ["Y", "y", "N", "n"].include?(confirm)
       confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (Y/N) ")
@@ -110,6 +111,10 @@ Vagrant.configure(2) do |config|
       if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
         FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
       end
+    end
+    # remove .dependencies.yml created on provisioning
+    if Dir.exists?(File.dirname(__FILE__) + '/.dependencies.yml')
+      FileUtils.rm_r File.dirname(__FILE__) + '/.dependencies.yml'
     end
   end
 

@@ -1,6 +1,6 @@
 require_relative 'utilities'
 
-def get_dependencies_list(root_loc)
+def create_dependencies_list(root_loc)
 
   if not File.exists?("#{root_loc}/.dependencies.yml")
     require 'yaml'
@@ -100,5 +100,5 @@ end
 
 
 if __FILE__ == $0
-  get_dependencies_list(File.dirname(__FILE__) + "/../../")
+  create_dependencies_list(File.dirname(__FILE__) + "/../../")
 end
