@@ -9,6 +9,8 @@ require_relative 'scripts/host/docker_compose'
 require_relative 'scripts/host/expose_ports'
 require_relative 'scripts/host/postgres_init'
 require_relative 'scripts/host/alembic_provision'
+require_relative 'scripts/host/db2_provision'
+require_relative 'scripts/host/dependencies'
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -49,7 +51,7 @@ Vagrant.configure(2) do |config|
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
 
-  #Only if vagrant up/resume do we want to create dev-env configuration
+  # Only if vagrant up/resume do we want to create dev-env configuration
   if ['up', 'resume'].include? ARGV[0]
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
@@ -61,7 +63,7 @@ Vagrant.configure(2) do |config|
       File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
     end
 
-    #Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
+    # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
     puts colorize_lightblue("Retrieving custom configuration repo files:")
     if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
       command_successful = system 'git', '-C', File.dirname(__FILE__) + '/dev-env-project', 'pull'
@@ -69,15 +71,19 @@ Vagrant.configure(2) do |config|
       command_successful = system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), File.dirname(__FILE__) + '/dev-env-project'
     end
 
-    #Error if git clone or pulling failed
+    # Error if git clone or pulling failed
     if command_successful == false
       puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project")
       exit 1
     end
 
-    #Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
+    # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
+
+    # Create a file called .dependencies.yml with the list of dependencies in it
+    puts colorize_lightblue("Creating list of dependencies")
+    get_dependencies_list(File.dirname(__FILE__))
 
     # Call the ruby function to create the docker compose file containing the apps and their dependencies
     puts colorize_lightblue("Creating docker-compose")
@@ -88,7 +94,7 @@ Vagrant.configure(2) do |config|
     # Either via 1) 'docker rm -v -f postgres' followed by a ( a) docker-compose up --build, or b) vagrant reload if the app configs need reparsing),
     # or 2) a vagrant reload --provision (but this will wipe ALL containers)
     prepare_postgres(File.dirname(__FILE__))
-    
+
     # Find the ports of the apps and dependencies on the host and add port forwards for them
     create_port_forwards(File.dirname(__FILE__), config)
   end
@@ -113,9 +119,9 @@ Vagrant.configure(2) do |config|
   # Install docker and docker-compose
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/install-docker.sh"
 
-  # Install docker and docker-compose
+  # Build and start all the containers
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
- 
+
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
@@ -123,11 +129,13 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
-  
+
   # Once the machine is fully configured and (re)started, run some more stuff
   config.trigger.after [:up, :resume] do
     # Alembic
     provision_alembic(File.dirname(__FILE__))
+    # Run app DB2 SQL statements
+    provision_db2(File.dirname(__FILE__))
   end
 
   config.vm.provider :virtualbox do |vb|

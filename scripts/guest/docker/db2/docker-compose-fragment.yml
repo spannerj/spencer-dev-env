@@ -3,9 +3,5 @@ services:
   db2:
     container_name: db2
     build: /vagrant/scripts/guest/docker/db2/
-    command: db2start
-    environment:
-      - DB2INST1_PASSWORD=db2inst1-pwd
-      - LICENSE=accept
     ports:
       - "50000:50000"
