@@ -20,7 +20,7 @@ def get_port_list(root_loc)
 
   # Put all the app ports into an array
   port_list = []
-  dependency_list = []
+  commodity_list = []
 
   if File.exists?("#{root_loc}/dev-env-project/configuration.yml")
     config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
@@ -43,31 +43,31 @@ def get_port_list(root_loc)
         end
       end
 
-      if appconfig.key?("dependencies")
-        appconfig["dependencies"].each do |dependency|
-          dependency_list.push(dependency)
+      if appconfig.key?("commodities")
+        appconfig["commodities"].each do |commodity|
+          commodity_list.push(commodity)
         end
       end
     end
   end
 
-  # Remove duplicate dependencies
-  dependency_list = dependency_list.uniq
+  # Remove duplicate commodities
+  commodity_list = commodity_list.uniq
 
-  if dependency_list.include? "postgres"
+  if commodity_list.include? "postgres"
     port_list.push("15432:5432")
   end
 
   #If rabbitmq is being used then expose the rabbitmq admin port
-  if dependency_list.include? "rabbitmq"
+  if commodity_list.include? "rabbitmq"
     port_list.push("25672:15672")
   end
 
-  if dependency_list.include? "db2"
+  if commodity_list.include? "db2"
     port_list.push("50000:50000")
   end
   
-  if dependency_list.include? "elasticsearch"
+  if commodity_list.include? "elasticsearch"
     port_list.push("19200:9200")
     port_list.push("19300:9300")
   end
@@ -76,5 +76,5 @@ def get_port_list(root_loc)
 end
 
 if __FILE__ == $0
-  expose_app_and_dependency_ports(File.dirname(__FILE__) + "/../../")
+  expose_app_and_commodity_ports(File.dirname(__FILE__) + "/../../")
 end

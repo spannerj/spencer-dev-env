@@ -7,4 +7,4 @@ docker_storage.vdi
 .docker-compose-file-list
 scripts/guest/docker/postgres/init.sql
 scripts/guest/docker/db2/init.sql
-.dependencies.yml
+.commodities.yml

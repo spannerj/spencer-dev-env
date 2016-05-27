@@ -10,7 +10,7 @@ require_relative 'scripts/host/expose_ports'
 require_relative 'scripts/host/postgres_init'
 require_relative 'scripts/host/alembic_provision'
 require_relative 'scripts/host/db2_provision'
-require_relative 'scripts/host/dependencies'
+require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
 require 'fileutils'
 
@@ -82,11 +82,11 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
 
-    # Create a file called .dependencies.yml with the list of dependencies in it
-    puts colorize_lightblue("Creating list of dependencies")
-    create_dependencies_list(File.dirname(__FILE__))
+    # Create a file called .commodities.yml with the list of commodities in it
+    puts colorize_lightblue("Creating list of commodities")
+    create_commodities_list(File.dirname(__FILE__))
 
-    # Call the ruby function to create the docker compose file containing the apps and their dependencies
+    # Call the ruby function to create the docker compose file containing the apps and their commodities
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
 
@@ -96,7 +96,7 @@ Vagrant.configure(2) do |config|
     # or 2) a vagrant reload --provision (but this will wipe ALL containers)
     prepare_postgres(File.dirname(__FILE__))
     
-    # Find the ports of the apps and dependencies on the host and add port forwards for them
+    # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(File.dirname(__FILE__), config)
   end
 
@@ -113,9 +113,9 @@ Vagrant.configure(2) do |config|
         FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
       end
     end
-    # remove .dependencies.yml created on provisioning
-    if Dir.exists?(File.dirname(__FILE__) + '/.dependencies.yml')
-      FileUtils.rm_r File.dirname(__FILE__) + '/.dependencies.yml'
+    # remove .commodities.yml created on provisioning
+    if Dir.exists?(File.dirname(__FILE__) + '/.commodities.yml')
+      FileUtils.rm_r File.dirname(__FILE__) + '/.commodities.yml'
   end
   end
 
@@ -136,7 +136,7 @@ Vagrant.configure(2) do |config|
   #is set to always run it will get run twice.
   config.vm.provision :reload
   
-  # Once the machine is fully configured and (re)started, run some more stuff
+  # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume] do
     # Alembic
     provision_alembic(File.dirname(__FILE__))

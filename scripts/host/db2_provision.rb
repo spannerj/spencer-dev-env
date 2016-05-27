@@ -1,5 +1,5 @@
 require_relative 'utilities'
-require_relative 'dependencies'
+require_relative 'commodities'
 
 def prepare_db2(root_loc)
   prepared = false
@@ -22,17 +22,17 @@ def prepare_db2(root_loc)
 end
 
 def provision_db2(root_loc)
-  # If db2 is a dependency
-  if is_dependency?(root_loc, "db2")
+  # If db2 is a commodity
+  if is_commodity?(root_loc, "db2")
     # If db2 it has not already been provisioned
-    if dependency_provisioned?(root_loc, "db2") == false
+    if commodity_provisioned?(root_loc, "db2") == false
       #Prepare the SQL that needs to run in db2
       if prepare_db2(root_loc)
         puts colorize_lightblue("Provisioning DB2")
         # Run the the command "db2 bash -c '~/sqllib/bin/db2 -tvf /init.sql" inside the db2 docker container
         system  "vagrant ssh -c \"docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2 -tvf /init.sql'\""
-        # Update the .dependencies.yml to indicate that db2 has now been provisioned
-        set_dependency_provision_status(root_loc, "db2", true)
+        # Update the .commodities.yml to indicate that db2 has now been provisioned
+        set_commodity_provision_status(root_loc, "db2", true)
       end
     end
   end
