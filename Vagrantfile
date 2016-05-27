@@ -48,7 +48,7 @@ Vagrant.configure(2) do |config|
 
   # Docker persistent storage (cachier can't cope)
   config.persistent_storage.enabled = true
-  config.persistent_storage.location = File.dirname(__FILE__) + "/docker_storage.vdi"
+  config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
 
