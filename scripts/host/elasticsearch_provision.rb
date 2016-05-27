@@ -1,11 +1,11 @@
 require_relative 'utilities'
-require_relative 'dependencies'
+require_relative 'commodities'
 
 def provision_elasticsearch(root_loc)
-  # If elasticsearch is a determined dependency
+  # If elasticsearch is a determined commodity
   # And it has not yet been provisioned
-  if is_dependency?(root_loc, "elasticsearch") &&
-    dependency_provisioned?(root_loc, "elasticsearch") == false
+  if is_commodity?(root_loc, "elasticsearch") &&
+    commodity_provisioned?(root_loc, "elasticsearch") == false
 
     puts colorize_lightblue("Searching for elasticsearch code")
     require 'yaml'
@@ -34,8 +34,8 @@ def provision_elasticsearch(root_loc)
     unless docker_commands.empty?
       puts colorize_lightblue("Running elasticsearch provisioning")
       system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
-      # Update the .dependencies.yml to indicate that elasticsearch has now been provisioned
-      set_dependency_provision_status(root_loc, "elasticsearch", true)
+      # Update the .commodities.yml to indicate that elasticsearch has now been provisioned
+      set_commodity_provision_status(root_loc, "elasticsearch", true)
     end
   else
      puts colorize_yellow("Elasticsearch not needed or previously provisioned, skipping")
