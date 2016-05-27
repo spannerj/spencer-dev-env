@@ -4,5 +4,6 @@ FROM postgres:9.4
 ENV POSTGRES_USER root
 ENV POSTGRES_PASSWORD superroot
 
-# Copy generated script into image, it will be run automatically when image is built
-COPY init.sql /docker-entrypoint-initdb.d/init.sql
+# For dev use - while in the container psql will just work (useful for the provisioning)
+ENV PGUSER root
+ENV PGPASSWORD superroot

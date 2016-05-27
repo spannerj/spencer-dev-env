@@ -5,6 +5,6 @@ dev-env-project/
 apps/
 docker_storage.vdi
 .docker-compose-file-list
-scripts/guest/docker/postgres/init.sql
+.postgres_init.sql
 scripts/guest/docker/db2/init.sql
 .commodities.yml

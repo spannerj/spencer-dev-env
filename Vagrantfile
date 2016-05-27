@@ -7,7 +7,7 @@ require_relative 'scripts/host/update_apps'
 require_relative 'scripts/host/utilities'
 require_relative 'scripts/host/docker_compose'
 require_relative 'scripts/host/expose_ports'
-require_relative 'scripts/host/postgres_init'
+require_relative 'scripts/host/postgres_provision'
 require_relative 'scripts/host/alembic_provision'
 require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
@@ -89,12 +89,6 @@ Vagrant.configure(2) do |config|
     # Call the ruby function to create the docker compose file containing the apps and their commodities
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
-
-    # Call the ruby function to check the apps for an SQL snippet to add to the SQL that gets run when the postgres container starts up.
-    # This only happens once, so to rerun it if it changes, the postgres container and it's volume will need to be removed first.
-    # Either via 1) 'docker rm -v -f postgres' followed by a ( a) docker-compose up --build, or b) vagrant reload if the app configs need reparsing),
-    # or 2) a vagrant reload --provision (but this will wipe ALL containers)
-    prepare_postgres(File.dirname(__FILE__))
     
     # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(File.dirname(__FILE__), config)
@@ -138,6 +132,11 @@ Vagrant.configure(2) do |config|
   
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume] do
+    # Check the apps for a postgres SQL snippet to add to the SQL that then gets run.
+    # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group), 
+    # you'll need to delete the postgres container and it's volume else you'll get errors. 
+    # Do a full vagrant provision, or just ssh in and do docker rm -v -f postgres
+    provision_postgres(File.dirname(__FILE__))
     # Alembic
     provision_alembic(File.dirname(__FILE__))
     # Run app DB2 SQL statements

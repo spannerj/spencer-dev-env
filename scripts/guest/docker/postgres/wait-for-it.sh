@@ -2,7 +2,9 @@
 set -e
 host="$1"
 
-until docker exec postgres bash -c 'psql -h "$host" -U "postgres" -lqt | cut -d \| -f 1 | grep -qw initfinished' ; do
+# Basically wait until a psql command completes successfully (checking for the existance of a database called postgres in the output)
+until docker exec postgres bash -c 'psql -h "$host" -U "postgres" -lqt | cut -d \| -f 1 | grep -qw postgres' ; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
+echo "Postgres is ready"
