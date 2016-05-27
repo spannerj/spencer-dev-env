@@ -151,5 +151,7 @@ Vagrant.configure(2) do |config|
     vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
     vb.customize ["modifyvm", :id, "--cpus", ENV['VM_CPUS'] || 4]
     vb.customize ['modifyvm', :id, '--paravirtprovider', 'kvm']
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--chipset", "ich9"]
   end
 end
