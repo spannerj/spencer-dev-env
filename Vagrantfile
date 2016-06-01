@@ -51,6 +51,13 @@ Vagrant.configure(2) do |config|
   config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
+  
+  # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
+  if !(['provision', '--provision'] & ARGV).empty?
+    if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
+      File.delete(File.dirname(__FILE__) + '/.commodities.yml')
+    end
+  end
 
   #Only if vagrant up/resume do we want to create dev-env configuration
   if ['up', 'resume'].include? ARGV[0]
@@ -108,9 +115,9 @@ Vagrant.configure(2) do |config|
       end
     end
     # remove .commodities.yml created on provisioning
-    if Dir.exists?(File.dirname(__FILE__) + '/.commodities.yml')
-      FileUtils.rm_r File.dirname(__FILE__) + '/.commodities.yml'
-  end
+    if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
+      File.delete(File.dirname(__FILE__) + '/.commodities.yml')
+    end
   end
 
   # Run script to configure environment
@@ -121,6 +128,18 @@ Vagrant.configure(2) do |config|
 
   # Build and start all the containers
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
+ 
+  # If the dev env custom config repo contains scripts, provision them here
+  # These scripts should only be for development use during a single project lifetime
+  # and their contents will need moving into the main devenv (and impact assessed accordingly)
+  # once the app their contents support become available for other teams to use in their dev envs
+  # (the impact on ITO-controlled environments etc should be considered as a matter of course)
+  if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment.sh')
+    config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
+  end
+  if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment-always.sh')
+    config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment-always.sh", run: "always"
+  end
  
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
