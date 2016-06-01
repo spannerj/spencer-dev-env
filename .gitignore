@@ -5,5 +5,5 @@ dev-env-project/
 apps/
 .docker-compose-file-list
 .postgres_init.sql
-scripts/guest/docker/db2/init.sql
+.db2_init.sql
 .commodities.yml
