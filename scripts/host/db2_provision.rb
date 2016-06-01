@@ -13,6 +13,12 @@ def prepare_db2(root_loc)
   File.open("#{root_loc}/.db2_init.sql", "w") {}
 
   config["applications"].each do |appname, appconfig|
+    # To help enforce the accuracy of the app's dependency file, only search for init sql 
+    # if the app specifically specifies db2 in it's commodity list
+    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+    has_db2 = dependencies.key?("commodities") && dependencies["commodities"].include?('db2')
+    next if not has_db2
+    
     # Load any SQL contained in the apps into the master file
     if File.exists?("#{root_loc}/apps/#{appname}/fragments/db2-init-fragment.sql")
       puts colorize_pink("Found some in #{appname}")

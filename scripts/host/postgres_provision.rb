@@ -13,6 +13,12 @@ def prepare_postgres(root_loc)
   File.open("#{root_loc}/.postgres_init.sql", 'w') { |file| file.write("CREATE ROLE vagrant WITH LOGIN PASSWORD 'vagrant';") }
   
   config["applications"].each do |appname, appconfig|
+    # To help enforce the accuracy of the app's dependency file, only search for init sql 
+    # if the app specifically specifies postgres in it's commodity list
+    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+    has_postgres = dependencies.key?("commodities") && dependencies["commodities"].include?('postgres')
+    next if not has_postgres
+    
     # Load any SQL contained in the apps into the master file
     if File.exists?("#{root_loc}/apps/#{appname}/fragments/postgres-init-fragment.sql")
       puts colorize_pink("Found some in #{appname}")

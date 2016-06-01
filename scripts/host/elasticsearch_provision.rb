@@ -18,6 +18,12 @@ def provision_elasticsearch(root_loc)
     had_one = false
     
     config["applications"].each do |appname, appconfig|
+      # To help enforce the accuracy of the app's dependency file, only search for init sql 
+      # if the app specifically specifies elasticsearch in it's commodity list
+      dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+      has_es = dependencies.key?("commodities") && dependencies["commodities"].include?('elasticsearch')
+      next if not has_es
+    
       # Any app that has a fragment should get it executed in the app container
       # Build up just one vagrant ssh command since it's a bit slow to connect
       if File.exists?("#{root_loc}/apps/#{appname}/fragments/elasticsearch-fragment.sh")

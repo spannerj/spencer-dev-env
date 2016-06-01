@@ -12,6 +12,12 @@ def provision_alembic(root_loc)
   had_one = false
   
   config["applications"].each do |appname, appconfig|
+    # To help enforce the accuracy of the app's dependency file, only search for alembic code 
+    # if the app specifically specifies postgres in it's commodity list
+    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+    has_postgres = dependencies.key?("commodities") && dependencies["commodities"].include?('postgres')
+    next if not has_postgres
+    
     # Any app that has a manage.py should get it executed in it's container
     # Build up just one vagrant ssh command since it's a bit slow to connect
     if File.exists?("#{root_loc}/apps/#{appname}/manage.py")
