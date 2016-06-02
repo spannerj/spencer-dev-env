@@ -162,6 +162,12 @@ Vagrant.configure(2) do |config|
     provision_db2(File.dirname(__FILE__))
     # Elasticsearch
     provision_elasticsearch(File.dirname(__FILE__))
+    
+    # We restart the containers here in case apps failed initially due to lack of provisioning
+    puts colorize_lightblue("Restarting containers")
+    system "vagrant ssh -c \"docker-compose stop && docker-compose up --no-build -d \""
+    
+    puts colorize_green("All done, environment is ready for use")
   end
 
   config.vm.provider :virtualbox do |vb|
