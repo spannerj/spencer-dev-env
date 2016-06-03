@@ -167,6 +167,16 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Restarting containers")
     system "vagrant ssh -c \"docker-compose stop && docker-compose up --no-build -d \""
     
+    # If the dev env custom config repo contains scripts, run them here
+    # These scripts should only be for development use during a single project lifetime
+    # and their contents/reason for existing will need assessing as to what to do next 
+    # (move to main devenv etc) once the app their contents support become available for 
+    # other teams to use in their dev envs
+    # (the impact on ITO-controlled environments etc should be considered as a matter of course)
+    if File.exists?(File.dirname(__FILE__) + '/dev-env-project/after-up.sh')
+      system "vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\""
+    end
+    
     puts colorize_green("All done, environment is ready for use")
   end
 
