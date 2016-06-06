@@ -48,10 +48,10 @@ Vagrant.configure(2) do |config|
 
   # Docker persistent storage (cachier can't cope)
   config.persistent_storage.enabled = true
-  config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
+  config.persistent_storage.location = File.dirname(__FILE__) + "/docker_storage.vdi"
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
-  
+
   # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
   if !(['provision', '--provision'] & ARGV).empty?
     if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
@@ -96,7 +96,7 @@ Vagrant.configure(2) do |config|
     # Call the ruby function to create the docker compose file containing the apps and their commodities
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
-    
+
     # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(File.dirname(__FILE__), config)
   end
@@ -128,7 +128,7 @@ Vagrant.configure(2) do |config|
 
   # Build and start all the containers
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
- 
+
   # If the dev env custom config repo contains scripts, provision them here
   # These scripts should only be for development use during a single project lifetime
   # and their contents will need moving into the main devenv (and impact assessed accordingly)
@@ -140,7 +140,7 @@ Vagrant.configure(2) do |config|
   if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment-always.sh')
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment-always.sh", run: "always"
   end
- 
+
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
@@ -148,12 +148,12 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
-  
+
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume] do
     # Check the apps for a postgres SQL snippet to add to the SQL that then gets run.
-    # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group), 
-    # you'll need to delete the postgres container and it's volume else you'll get errors. 
+    # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group),
+    # you'll need to delete the postgres container and it's volume else you'll get errors.
     # Do a full vagrant provision, or just ssh in and do docker rm -v -f postgres
     provision_postgres(File.dirname(__FILE__))
     # Alembic
@@ -162,21 +162,21 @@ Vagrant.configure(2) do |config|
     provision_db2(File.dirname(__FILE__))
     # Elasticsearch
     provision_elasticsearch(File.dirname(__FILE__))
-    
+
     # We restart the containers here in case apps failed initially due to lack of provisioning
     puts colorize_lightblue("Restarting containers")
     system "vagrant ssh -c \"docker-compose stop && docker-compose up --no-build -d \""
-    
+
     # If the dev env custom config repo contains scripts, run them here
     # These scripts should only be for development use during a single project lifetime
-    # and their contents/reason for existing will need assessing as to what to do next 
-    # (move to main devenv etc) once the app their contents support become available for 
+    # and their contents/reason for existing will need assessing as to what to do next
+    # (move to main devenv etc) once the app their contents support become available for
     # other teams to use in their dev envs
     # (the impact on ITO-controlled environments etc should be considered as a matter of course)
     if File.exists?(File.dirname(__FILE__) + '/dev-env-project/after-up.sh')
       system "vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\""
     end
-    
+
     puts colorize_green("All done, environment is ready for use")
   end
 

@@ -4,6 +4,7 @@ dev-env-project/
 .DS_Store
 apps/
 .docker-compose-file-list
+docker_storage.vdi
 .postgres_init.sql
 .db2_init.sql
 .commodities.yml
