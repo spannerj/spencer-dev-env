@@ -6,6 +6,4 @@ ENV LICENSE accept
 
 EXPOSE 50000
 
-COPY init.sql init.sql
-
 CMD ["db2start"]

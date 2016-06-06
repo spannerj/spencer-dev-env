@@ -20,7 +20,6 @@ def get_port_list(root_loc)
 
   # Put all the app ports into an array
   port_list = []
-  commodity_list = []
 
   if File.exists?("#{root_loc}/dev-env-project/configuration.yml")
     config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
@@ -29,8 +28,8 @@ def get_port_list(root_loc)
     # the fragment add it to port_list
     config["applications"].each do |appname, appconfig|
       # If this app is docker, add it's compose to the list
-      if File.exists?("#{root_loc}/apps/#{appname}/docker-compose-fragment.yml")
-        compose_file = YAML.load_file("#{root_loc}/apps/#{appname}/docker-compose-fragment.yml")
+      if File.exists?("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
+        compose_file = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
 
         compose_file["services"].each do |composeappname, composeappconfig|
           # If the compose file has a port section
@@ -42,32 +41,23 @@ def get_port_list(root_loc)
           end
         end
       end
-
-      if appconfig.key?("commodities")
-        appconfig["commodities"].each do |commodity|
-          commodity_list.push(commodity)
-        end
-      end
     end
   end
 
-  # Remove duplicate commodities
-  commodity_list = commodity_list.uniq
-
-  if commodity_list.include? "postgres"
+  if is_commodity?(root_loc, "postgres") 
     port_list.push("15432:5432")
   end
 
   #If rabbitmq is being used then expose the rabbitmq admin port
-  if commodity_list.include? "rabbitmq"
+  if is_commodity?(root_loc, "rabbitmq")
     port_list.push("25672:15672")
   end
 
-  if commodity_list.include? "db2"
+  if is_commodity?(root_loc, "db2")
     port_list.push("50000:50000")
   end
   
-  if commodity_list.include? "elasticsearch"
+  if is_commodity?(root_loc, "elasticsearch")
     port_list.push("19200:9200")
     port_list.push("19300:9300")
   end
