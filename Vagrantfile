@@ -37,7 +37,6 @@ Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
   config.vm.box_version      = "0.3.0"
   config.vm.box_check_update = false
-  config.ssh.forward_agent = true
 
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
@@ -48,7 +47,14 @@ Vagrant.configure(2) do |config|
 
   # Docker persistent storage (cachier can't cope)
   config.persistent_storage.enabled = true
-  config.persistent_storage.location = File.dirname(__FILE__) + "/docker_storage.vdi"
+  # Put the cache file in the vagrant cache directory - but got to find out where that is first!
+  if ENV.has_key?('VAGRANT_HOME') # Overidden by user
+    config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
+  elsif ENV.has_key?('USERPROFILE') # Windows default
+    config.persistent_storage.location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
+  else # Linux/OSX default
+    config.persistent_storage.location = "~/.vagrant.d/cache/docker_storage.vdi"
+  end
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
 
