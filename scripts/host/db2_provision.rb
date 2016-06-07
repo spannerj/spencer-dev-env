@@ -16,6 +16,7 @@ def prepare_db2(root_loc)
     # To help enforce the accuracy of the app's dependency file, only search for init sql 
     # if the app specifically specifies db2 in it's commodity list
     dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+    next if dependencies.nil?
     has_db2 = dependencies.key?("commodities") && dependencies["commodities"].include?('db2')
     next if not has_db2
     
