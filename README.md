@@ -7,7 +7,7 @@ It provides several hooks for applications to take advantage of, including:
 * Automatic creation of commodity systems such as Postgres or Elasticsearch (with further hooks to allow for initial provisoning such as running SQL, Alembic DB upgrades or elasticsearch index creation)
 
 
-#Pre-requisites
+# Pre-requisites
 
 ## Software
 * [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0+)
@@ -19,11 +19,11 @@ It provides several hooks for applications to take advantage of, including:
 You must ensure the terminal you are starting the virtual machine from can access all the necessary Git repositories (depending where your config repo and application repos are - Internal GitLab, AWS GitLab, GitHub) via SSH. This usually means having all the appropriate keys in your SSH-agent. 
 
 ### Generation
-To generate key(s) you can run `ssh-keygen -t rsa -b 4096 -C "your_email@example.com"`. You will then need to add them to your account's SSH Keys section on the relevent web site ([GitLab](http://docs.gitlab.com/ce/gitlab-basics/create-your-ssh-keys.html)/[GitHub](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
+To generate key(s) you can run `ssh-keygen -t rsa -b 4096 -C "your_email@example.com"`. You will then need to add them to your account's SSH Keys section on the relevent web site ([GitLab](http://docs.gitlab.com/ce/gitlab-basics/create-your-ssh-keys.html)/[GitHub](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/))
 
-#### Adding to agent
+### Adding to agent
 
-##### Mac
+#### Mac
 
 In your .bashrc or .zshrc add the following lines (change id_rsa to the name of your key):
 
@@ -33,15 +33,47 @@ ssh-add ~/.ssh/id_rsa
 ```
 Repeat the `ssh-add` line for each key.
 
-##### Windows
+#### Windows
 
 Copy the contents of [this script snippet](http://192.168.249.38/common/dev-env/snippets/1) into your `~/.bash_profile` file, this will ensure all your keys get loaded into the agent (and only one agent executable ever runs). 
 
 Note that this assumes that all the keys are placed in `~/.ssh` and all their names end in `_rsa`. If not, you will need to modify the script accordingly to load the right filenames.
 
 
-#Quickstart
+# Quickstart
 
 Run `vagrant up`
 
-If this is the first time you are launching the machine you will be prompted for the url of your configuration repo. Paste it in and press enter.
+If this is the first time you are launching the machine you will be prompted for the url of your configuration repository. Paste it in and press enter.
+
+# Guides
+
+## Configuration Repository
+
+### (Mandatory) configuration.yml
+The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly. 
+
+Example:
+```
+applications:
+
+  workflow-allocation-frontend:
+    repo: git@git.lr.net:workflow/workflow-allocation-frontend.git
+    branch: develop
+  
+  workflow-identify-api:
+    repo: git@git.lr.net:workflow/workflow-identify-api.git
+    branch: develop
+```
+
+The repos will be pulled down and updated on each vagrant up, unless the current branch does not match the one in the configuration (this allows you to create and work in feature branches and be in full control of updates and merges).
+
+### (Optional) environment.sh
+
+This is a shell script that will be executed inside the vagrant machine during the provisioning process (i.e. on the first `vagrant up` only, unless --provision is used). It can be used to modify the environment, change configuration of existing commodities, install new packages for trialling - basically anything you want.
+
+If there is code added to support the needs of specific apps, then before those apps are ready to be used by the general populace (i.e. they could start appearing in other configuration repos) consideration should be given to whether the environment of the universal dev env needs to integrate them - as well as the ITO-controlled envornments (since they should match). Any changes will need to be assessed as to their impact on other apps.
+
+### (Optional) after-up.sh
+
+As above, but gets executed on every `vagrant up` at the end of the process, after all the containers are started.
