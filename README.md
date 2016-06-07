@@ -27,7 +27,7 @@ To generate key(s) you can run `ssh-keygen -t rsa -b 4096 -C "your_email@example
 
 In your .bashrc or .zshrc add the following lines (change id_rsa to the name of your key):
 
-```
+```shell
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
 ```
@@ -54,7 +54,7 @@ If this is the first time you are launching the machine you will be prompted for
 The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly. 
 
 Example:
-```
+```yaml
 applications:
 
   workflow-allocation-frontend:
@@ -77,3 +77,21 @@ If there is code added to support the needs of specific apps, then before those 
 ### (Optional) after-up.sh
 
 As above, but gets executed on every `vagrant up` at the end of the process, after all the containers are started.
+
+## Applications
+
+For an application to leverage the full power of the universal development environment...
+
+### dependencies.yml
+
+#### fragments/postgres-init-fragment.sql
+
+#### manage.py
+
+#### fragments/db2-init-fragment.sql
+
+#### fragments/elasticsearch-fragment.sh
+
+### fragments/docker-compose-fragment.yml
+
+#### Dockerfile
