@@ -37,7 +37,6 @@ Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
   config.vm.box_version      = "0.3.0"
   config.vm.box_check_update = false
-  config.ssh.forward_agent = true
 
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
