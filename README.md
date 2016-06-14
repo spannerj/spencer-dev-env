@@ -53,18 +53,7 @@ If this is the first time you are launching the machine you will be prompted for
 ### (Mandatory) configuration.yml
 The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly. 
 
-Example:
-```yaml
-applications:
-
-  workflow-allocation-frontend:
-    repo: git@git.lr.net:workflow/workflow-allocation-frontend.git
-    branch: develop
-  
-  workflow-identify-api:
-    repo: git@git.lr.net:workflow/workflow-identify-api.git
-    branch: develop
-```
+[Example](http://192.168.249.38/common/dev-env/snippets/3)
 
 The repos will be pulled down and updated on each vagrant up, unless the current branch does not match the one in the configuration (this allows you to create and work in feature branches and be in full control of updates and merges).
 
@@ -84,7 +73,17 @@ For an application to leverage the full power of the universal development envir
 
 ### dependencies.yml
 
+This file lives in the root of the application and specifies which commodities the dev-env needs to create and launch in order for the application to connect to/use.
+
+[Example](http://192.168.249.38/common/dev-env/snippets/2)
+
+The commodities may require further files in order to set them up correctly, these are detailed below:
+
 #### fragments/postgres-init-fragment.sql
+
+This file contains any SQL to run in postgres - at the minimum it will normally be creating a database and assigning permissions to the vagrant user. For complete isolation from other applications, perhaps consider creating a database-specific user (especially if this would match usage in higher regions).
+
+[Example](http://192.168.249.38/common/dev-env/snippets/4)
 
 #### manage.py
 
