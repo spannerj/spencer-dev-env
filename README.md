@@ -6,12 +6,16 @@ It provides several hooks for applications to take advantage of, including:
 * Docker container creation and launching via docker-compose (base Python/Flask/Java images are provided to extend from)
 * Automatic creation of commodity systems such as Postgres or Elasticsearch (with further hooks to allow for initial provisoning such as running SQL, Alembic DB upgrades or elasticsearch index creation)
 
+# Changelog
+
+* **v0.2** First public release
 
 # Pre-requisites
 
 ## Software
 * [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0+)
 * [Vagrant](https://www.vagrantup.com/) (v1.8+))
+ * Make sure you do **not** have the vagrant-vbguest plugin installed. Any plugins the environment needs will be installed automatically.
 * **_Windows users only_** [Git For Windows](http://git-for-windows.github.io) (download the portable zip version to get around any admin requirements) All the instructions in this README assume that you will be using Git Bash/MINGW64 which comes as part of this. It gives you a Unix-like shell and commands which make life much easier. While this software is technically optional, getting everything to work in the normal Windows command line is not covered here.
 
 ## Git/SSH
@@ -25,13 +29,13 @@ To generate key(s) you can run `ssh-keygen -t rsa -b 4096 -C "your_email@example
 
 #### Mac
 
-In your .bashrc or .zshrc add the following lines (change id_rsa to the name of your key):
+In your .bashrc or .zshrc add the following lines:
 
 ```shell
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
 ```
-Repeat the `ssh-add` line for each key.
+Repeat the `ssh-add` line for each key, changing the filename as appropriate.
 
 #### Windows
 
@@ -50,20 +54,22 @@ If this is the first time you are launching the machine you will be prompted for
 
 ## Configuration Repository
 
-### (Mandatory) configuration.yml
+[Example (workflow alpha)](http://git.lr.net/workflow/universal-devenv-workflow)
+
+### `configuration.yml` (Mandatory)
 The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly. 
 
 [Example](http://192.168.249.38/common/dev-env/snippets/3)
 
 The repos will be pulled down and updated on each vagrant up, unless the current branch does not match the one in the configuration (this allows you to create and work in feature branches and be in full control of updates and merges).
 
-### (Optional) environment.sh
+### `environment.sh`
 
 This is a shell script that will be executed inside the vagrant machine during the provisioning process (i.e. on the first `vagrant up` only, unless --provision is used). It can be used to modify the environment, change configuration of existing commodities, install new packages for trialling - basically anything you want.
 
 If there is code added to support the needs of specific apps, then before those apps are ready to be used by the general populace (i.e. they could start appearing in other configuration repos) consideration should be given to whether the environment of the universal dev env needs to integrate them - as well as the ITO-controlled envornments (since they should match). Any changes will need to be assessed as to their impact on other apps.
 
-### (Optional) after-up.sh
+### `after-up.sh`
 
 As above, but gets executed on every `vagrant up` at the end of the process, after all the containers are started.
 
@@ -71,26 +77,68 @@ As above, but gets executed on every `vagrant up` at the end of the process, aft
 
 For an application to leverage the full power of the universal development environment...
 
-### dependencies.yml
+### Docker
+
+To run an app, this environment uses Docker containers. So any app that wishes to be run in this way needs to provide some files to support that.
+
+#### `/fragments/docker-compose-fragment.yml`
+
+If this file exists, it will be used to construct the container (after building the image from the Dockerfile - see below) and then launch it. The standard rules are:
+* Container name and service name should match
+* The ports entry should map the internal Docker port to the app's default unique port as specified in it's configuration files
+* The volumes entry should map the path of the app folder in the vagrant machine to /src. 
+* There should be no volumes entry for compiled apps such as Java as the files are already in the image.
+
+[Example](http://192.168.249.38/common/dev-env/snippets/8)
+
+#### `/Dockerfile`
+
+This is the file that contructs the application container image. The standard rules are:
+* There are base images provided that the app should extend (lr_base_python, lr_base_python_flask and lr_base_java - they have their own Dockerfiles in this repo that can be inspected if you wish to learn more about what they provide for you (for example, Flask provides a default command that runs gunicorn), but in general you can use the examples and just change the app-specific section to set variables and install any extra software via yum.
+* Any environment variables that need to change to make it work within Docker over and above the application defaults (usually variables that require hostnames) should be specified.
+* If there is a port environment variable, set it to 8080 (so that the docker-compose fragments are more consistent in their mappings)
+
+Generally speaking, we are trying to keep anything Docker-specific contained in this file, so applications will still be runnable outside of Docker with no changes (and in the case of ITO-controlled regions, will be!).
+
+[Example - Python/Flask](http://192.168.249.38/common/dev-env/snippets/6)
+
+[Example - Java](http://192.168.249.38/common/dev-env/snippets/7)
+
+### Commodities
+
+#### `/configuration.yml`
 
 This file lives in the root of the application and specifies which commodities the dev-env needs to create and launch in order for the application to connect to/use.
 
 [Example](http://192.168.249.38/common/dev-env/snippets/2)
 
-The commodities may require further files in order to set them up correctly, these are detailed below:
+The commodities may require further files in order to set them up correctly, these are detailed below. Note that unless specified, any  fragment files will only be run once. This is controlled by a generated `.commodities.yml` file in the root of the dev-env, which you can change to allow the files to be read again - useful if you've added a new app to the configuration file 
 
-#### fragments/postgres-init-fragment.sql
+#### `/fragments/postgres-init-fragment.sql` (postgres)
 
-This file contains any SQL to run in postgres - at the minimum it will normally be creating a database and assigning permissions to the vagrant user. For complete isolation from other applications, perhaps consider creating a database-specific user (especially if this would match usage in higher regions).
+This file contains any SQL to run in postgres during the initial setup - at the minimum it will normally be creating a database and assigning permissions to the vagrant user. For complete isolation from other applications, perhaps consider creating a database-specific user (especially if this would match usage in higher regions).
 
 [Example](http://192.168.249.38/common/dev-env/snippets/4)
 
-#### manage.py
+#### `/manage.py` (postgres)
 
-#### fragments/db2-init-fragment.sql
+This is a standard Alembic management file - if it exists, then a database migration will be run on every `vagrant up`.
 
-#### fragments/elasticsearch-fragment.sh
+#### `/fragments/db2-init-fragment.sql` (db2)
 
-### fragments/docker-compose-fragment.yml
+This file contains any SQL to run in DB2 during the initial setup - at the minimum it will normally be creating a database.
 
-#### Dockerfile
+[Example](http://192.168.249.38/common/dev-env/snippets/9)
+
+#### `/fragments/elasticsearch-fragment.sh` (elasticsearch)
+
+This file is a shell script that contains curl commands to do any setup the app needs in elasticsearch - creating indexes etc. It will be passed a single argument, the hostname, which can be accessed in the script using `$1`.
+
+[Example](http://192.168.249.38/common/dev-env/snippets/5)
+
+# Useful commands
+
+`docker-compose rm -v -f CONTAINERNAME` - completely destroys a container and it's data
+
+`docker-compose restart CONTAINERNAME` - brings a container down and up again. Leave out the container name to restart all of them.
+
