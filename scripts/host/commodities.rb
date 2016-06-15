@@ -10,7 +10,7 @@ def create_commodities_list(root_loc)
   commodity_list = []
   config["applications"].each do |appname, appconfig|
     # Load any commodities into the list
-    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
     next if dependencies.nil?
     if dependencies.key?("commodities")
       dependencies["commodities"].each do |appcommodity|
