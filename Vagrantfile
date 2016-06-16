@@ -7,8 +7,11 @@ require_relative 'scripts/host/update_apps'
 require_relative 'scripts/host/utilities'
 require_relative 'scripts/host/docker_compose'
 require_relative 'scripts/host/expose_ports'
-require_relative 'scripts/host/postgres_init'
+require_relative 'scripts/host/postgres_provision'
 require_relative 'scripts/host/alembic_provision'
+require_relative 'scripts/host/db2_provision'
+require_relative 'scripts/host/commodities'
+require_relative 'scripts/host/elasticsearch_provision'
 require 'fileutils'
 
 # If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
@@ -34,7 +37,6 @@ Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
   config.vm.box_version      = "0.3.0"
   config.vm.box_check_update = false
-  config.ssh.forward_agent = true
 
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
@@ -45,9 +47,23 @@ Vagrant.configure(2) do |config|
 
   # Docker persistent storage (cachier can't cope)
   config.persistent_storage.enabled = true
-  config.persistent_storage.location = File.dirname(__FILE__) + "/docker_storage.vdi"
+  # Put the cache file in the vagrant cache directory - but got to find out where that is first!
+  if ENV.has_key?('VAGRANT_HOME') # Overidden by user
+    config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
+  elsif ENV.has_key?('USERPROFILE') # Windows default
+    config.persistent_storage.location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
+  else # Linux/OSX default
+    config.persistent_storage.location = "~/.vagrant.d/cache/docker_storage.vdi"
+  end
   config.persistent_storage.size = 50000
   config.persistent_storage.mountpoint = '/var/lib/docker'
+
+  # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
+  if !(['provision', '--provision'] & ARGV).empty?
+    if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
+      File.delete(File.dirname(__FILE__) + '/.commodities.yml')
+    end
+  end
 
   #Only if vagrant up/resume do we want to create dev-env configuration
   if ['up', 'resume'].include? ARGV[0]
@@ -79,22 +95,21 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
 
-    # Call the ruby function to create the docker compose file containing the apps and their dependencies
+    # Create a file called .commodities.yml with the list of commodities in it
+    puts colorize_lightblue("Creating list of commodities")
+    create_commodities_list(File.dirname(__FILE__))
+
+    # Call the ruby function to create the docker compose file containing the apps and their commodities
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(File.dirname(__FILE__))
 
-    # Call the ruby function to check the apps for an SQL snippet to add to the SQL that gets run when the postgres container starts up.
-    # This only happens once, so to rerun it if it changes, the postgres container and it's volume will need to be removed first.
-    # Either via 1) 'docker rm -v -f postgres' followed by a ( a) docker-compose up --build, or b) vagrant reload if the app configs need reparsing),
-    # or 2) a vagrant reload --provision (but this will wipe ALL containers)
-    prepare_postgres(File.dirname(__FILE__))
-    
-    # Find the ports of the apps and dependencies on the host and add port forwards for them
+    # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(File.dirname(__FILE__), config)
   end
 
-  # In the event of user requesting a vagrant destroy, remove DEV_ENV_CONTEXT_FILE created on provisioning
+  # In the event of user requesting a vagrant destroy
   config.trigger.before :destroy do
+    # remove DEV_ENV_CONTEXT_FILE created on provisioning
     confirm = nil
     until ["Y", "y", "N", "n"].include?(confirm)
       confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (Y/N) ")
@@ -105,6 +120,10 @@ Vagrant.configure(2) do |config|
         FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
       end
     end
+    # remove .commodities.yml created on provisioning
+    if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
+      File.delete(File.dirname(__FILE__) + '/.commodities.yml')
+    end
   end
 
   # Run script to configure environment
@@ -113,9 +132,15 @@ Vagrant.configure(2) do |config|
   # Install docker and docker-compose
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/install-docker.sh"
 
-  # Install docker and docker-compose
+  # Build and start all the containers
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
- 
+
+  # If the dev env configuration repo contains a script, provision it here
+  # This should only be for temporary use during early app development - see the README for more info
+  if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment.sh')
+    config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
+  end
+
   # Update Virtualbox Guest Additions
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
 
@@ -123,11 +148,32 @@ Vagrant.configure(2) do |config|
   #Always force reload last, after every provisioner has run, otherwise if a provisioner
   #is set to always run it will get run twice.
   config.vm.provision :reload
-  
-  # Once the machine is fully configured and (re)started, run some more stuff
+
+  # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume] do
+    # Check the apps for a postgres SQL snippet to add to the SQL that then gets run.
+    # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group),
+    # you'll need to delete the postgres container and it's volume else you'll get errors.
+    # Do a full vagrant provision, or just ssh in and do docker rm -v -f postgres
+    provision_postgres(File.dirname(__FILE__))
     # Alembic
     provision_alembic(File.dirname(__FILE__))
+    # Run app DB2 SQL statements
+    provision_db2(File.dirname(__FILE__))
+    # Elasticsearch
+    provision_elasticsearch(File.dirname(__FILE__))
+
+    # We restart the containers here in case apps failed initially due to lack of provisioning
+    puts colorize_lightblue("Restarting containers")
+    system "vagrant ssh -c \"docker-compose stop && docker-compose up --no-build -d \""
+
+    # If the dev env configuration repo contains a script, run it here
+    # This should only be for temporary use during early app development - see the README for more info
+    if File.exists?(File.dirname(__FILE__) + '/dev-env-project/after-up.sh')
+      system "vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\""
+    end
+
+    puts colorize_green("All done, environment is ready for use")
   end
 
   config.vm.provider :virtualbox do |vb|
@@ -138,5 +184,7 @@ Vagrant.configure(2) do |config|
     vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
     vb.customize ["modifyvm", :id, "--cpus", ENV['VM_CPUS'] || 4]
     vb.customize ['modifyvm', :id, '--paravirtprovider', 'kvm']
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--chipset", "ich9"]
   end
 end

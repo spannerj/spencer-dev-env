@@ -29,6 +29,7 @@ def update_apps(root_loc)
       end
 
       # Update all the remote branches (this will not change the local branch, we'll do that further down')
+      puts colorize_lightblue("Fetching from remote...")
       if not system 'git', '-C', "#{root_loc}/apps/#{appname}", 'fetch', 'origin'
         # If there is a git error we shouldn't continue
         puts colorize_red("Error while updating #{appname}")

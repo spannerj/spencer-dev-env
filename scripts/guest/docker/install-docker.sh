@@ -15,7 +15,7 @@ usermod -a -G docker vagrant
 
 echo "- - - Installing Docker Compose - - -"
 #Install Docker compose
-curl -L https://github.com/docker/compose/releases/download/1.7.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
 chmod 755 /usr/local/bin/docker-compose
 export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
@@ -32,3 +32,4 @@ fi
 echo "- - - Building base docker python images - - -"
 docker build -t lr_base_python /vagrant/scripts/guest/docker/lr_base_python
 docker build -t lr_base_python_flask /vagrant/scripts/guest/docker/lr_base_python/flask
+docker build -t lr_base_java /vagrant/scripts/guest/docker/lr_base_java

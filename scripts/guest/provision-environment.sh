@@ -17,3 +17,7 @@ echo 'cd /vagrant; # switch to workspace' >> ${HOME}/.bash_profile
 # Update all packages (except kernel files - prevents guest additions breakage)
 echo 'Updating all currently installed non-kernel packages'
 yum -y -q --exclude=kernel\* update
+
+# Ruby
+# Run external script as vagrant user. Running as root does not play nicely with RVM
+sudo -i -u vagrant source /vagrant/scripts/guest/install-ruby.sh

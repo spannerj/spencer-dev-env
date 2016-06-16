@@ -3,6 +3,9 @@
 dev-env-project/
 .DS_Store
 apps/
-docker_storage.vdi
 .docker-compose-file-list
-scripts/guest/docker/postgres/init.sql
+docker_storage.vdi
+.postgres_init.sql
+.db2_init.sql
+.commodities.yml
+mpapis.asc
