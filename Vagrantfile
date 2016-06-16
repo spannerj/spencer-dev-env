@@ -135,16 +135,10 @@ Vagrant.configure(2) do |config|
   # Build and start all the containers
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
 
-  # If the dev env custom config repo contains scripts, provision them here
-  # These scripts should only be for development use during a single project lifetime
-  # and their contents will need moving into the main devenv (and impact assessed accordingly)
-  # once the app their contents support become available for other teams to use in their dev envs
-  # (the impact on ITO-controlled environments etc should be considered as a matter of course)
+  # If the dev env configuration repo contains a script, provision it here
+  # This should only be for temporary use during early app development - see the README for more info
   if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment.sh')
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
-  end
-  if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment-always.sh')
-    config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment-always.sh", run: "always"
   end
 
   # Update Virtualbox Guest Additions
@@ -173,12 +167,8 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Restarting containers")
     system "vagrant ssh -c \"docker-compose stop && docker-compose up --no-build -d \""
 
-    # If the dev env custom config repo contains scripts, run them here
-    # These scripts should only be for development use during a single project lifetime
-    # and their contents/reason for existing will need assessing as to what to do next
-    # (move to main devenv etc) once the app their contents support become available for
-    # other teams to use in their dev envs
-    # (the impact on ITO-controlled environments etc should be considered as a matter of course)
+    # If the dev env configuration repo contains a script, run it here
+    # This should only be for temporary use during early app development - see the README for more info
     if File.exists?(File.dirname(__FILE__) + '/dev-env-project/after-up.sh')
       system "vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\""
     end

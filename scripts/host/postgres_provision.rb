@@ -15,7 +15,8 @@ def prepare_postgres(root_loc)
   config["applications"].each do |appname, appconfig|
     # To help enforce the accuracy of the app's dependency file, only search for init sql 
     # if the app specifically specifies postgres in it's commodity list
-    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/dependencies.yml")
+    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
+    next if dependencies.nil?
     has_postgres = dependencies.key?("commodities") && dependencies["commodities"].include?('postgres')
     next if not has_postgres
     
@@ -46,7 +47,7 @@ def provision_postgres(root_loc)
       docker_commands.push("docker exec postgres psql -q -f '/init.sql'")
       # Now actually run the commands
       system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
-      # Update the .dependencies.yml to indicate that postgres has now been provisioned
+      # Update the .commodities.yml to indicate that postgres has now been provisioned
       set_commodity_provision_status(root_loc, "postgres", true)
     end
   else

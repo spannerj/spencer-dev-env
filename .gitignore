@@ -8,3 +8,4 @@ docker_storage.vdi
 .postgres_init.sql
 .db2_init.sql
 .commodities.yml
+mpapis.asc
