@@ -100,6 +100,8 @@ This is the file that contructs the application container image. The standard ru
 
 Generally speaking, we are trying to keep anything Docker-specific contained in this file, so applications will still be runnable outside of Docker with no changes (and in the case of ITO-controlled regions, will be!).
 
+You may notice that the example Java Dockerfile adds all files in the repo into the image so the source can be compiled. It is recommended you place a `.dockerignore` file in the application repo with the contents `.git` so that layer caching works correctly and the app image doesn't get rebuilt on every `vagrant up` (since the .git files get updated when the repo gets pulled).
+
 [Example - Python/Flask](http://192.168.249.38/common/dev-env/snippets/6)
 
 [Example - Java](http://192.168.249.38/common/dev-env/snippets/7)
