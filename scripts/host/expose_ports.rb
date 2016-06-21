@@ -50,7 +50,8 @@ def get_port_list(root_loc)
 
   #If rabbitmq is being used then expose the rabbitmq admin port
   if is_commodity?(root_loc, "rabbitmq")
-    port_list.push("25672:15672")
+    port_list.push("35672:5672")
+    port_list.push("45672:15672")
   end
 
   if is_commodity?(root_loc, "db2")
