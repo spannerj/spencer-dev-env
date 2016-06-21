@@ -8,6 +8,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.2.1** Updated base vagrant box version, fixed a few provisioning bugs
 * **v0.2** First public release
 
 # Pre-requisites
