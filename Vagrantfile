@@ -35,7 +35,7 @@ DEV_ENV_CONTEXT_FILE = File.dirname(__FILE__) + "/.dev-env-context"
 
 Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
-  config.vm.box_version      = "0.3.0"
+  config.vm.box_version      = "0.5.0"
   config.vm.box_check_update = false
 
   # Configure cached packages to be shared between instances of the same base box.
