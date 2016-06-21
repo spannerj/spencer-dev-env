@@ -14,11 +14,14 @@ echo "export COMPOSE_FILE='$COMPOSE_FILE'" >> ${HOME}/.bash_profile
 
 #TODO if docker list empty, don't do docker stuff'
 
-echo "- - - (Re)building docker container images (volumes kept) - - -"
+echo "- - - (Re)building docker images (volumes kept) - - -"
 /usr/local/bin/docker-compose build
 
-echo "- - - Creating and launching docker containers - - -"
-/usr/local/bin/docker-compose up --no-build -d
+# Workaround because docker-compose create doesn't create network (only up does) and it's needed to create the containers
+docker network create dv_default
+
+echo "- - - (Re)creating docker containers - - -"
+/usr/local/bin/docker-compose create --no-build
 
 echo "- - - Removing any orphaned docker volumes - - -"
 docker volume ls -qf dangling=true | xargs -r docker volume rm

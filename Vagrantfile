@@ -35,7 +35,7 @@ DEV_ENV_CONTEXT_FILE = File.dirname(__FILE__) + "/.dev-env-context"
 
 Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
-  config.vm.box_version      = "0.3.0"
+  config.vm.box_version      = "0.5.0"
   config.vm.box_check_update = false
 
   # Configure cached packages to be shared between instances of the same base box.
@@ -163,9 +163,9 @@ Vagrant.configure(2) do |config|
     # Elasticsearch
     provision_elasticsearch(File.dirname(__FILE__))
 
-    # We restart the containers here in case apps failed initially due to lack of provisioning
-    puts colorize_lightblue("Restarting containers")
-    system "vagrant ssh -c \"docker-compose stop && docker-compose up --no-build -d \""
+    # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
+    puts colorize_lightblue("Starting containers")
+    system "vagrant ssh -c \"docker-compose up --no-build -d \""
 
     # If the dev env configuration repo contains a script, run it here
     # This should only be for temporary use during early app development - see the README for more info

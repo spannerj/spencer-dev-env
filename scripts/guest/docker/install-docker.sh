@@ -8,7 +8,7 @@ enabled=1
 gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
-yum -y -q install docker-engine
+yum -y -q install docker-engine bash-completion
 service docker start
 chkconfig docker on
 usermod -a -G docker vagrant
@@ -19,6 +19,9 @@ curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose
 chmod 755 /usr/local/bin/docker-compose
 export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
+
+# Bash autocompletion of container names
+curl -L https://raw.githubusercontent.com/docker/compose/1.7.1/contrib/completion/bash/docker-compose > /etc/bash_completion.d/docker-compose
 
 echo "- - - Removing all existing docker containers (and their data volumes) - - -"
 docker ps -a -q | xargs docker rm -v -f
