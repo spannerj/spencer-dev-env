@@ -29,6 +29,7 @@ def provision_elasticsearch(root_loc)
       # Build up just one vagrant ssh command since it's a bit slow to connect
       if File.exists?("#{root_loc}/apps/#{appname}/fragments/elasticsearch-fragment.sh")
         if had_one == false
+          docker_commands.push("docker-compose start elasticsearch")
           # Better not run anything until elasticsearch is ready to accept connections...
           docker_commands.push("echo Waiting for elasticsearch to finish initialising")
           docker_commands.push("/vagrant/scripts/guest/wait-for-it.sh -h localhost -p 9200")

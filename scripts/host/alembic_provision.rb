@@ -23,13 +23,16 @@ def provision_alembic(root_loc)
     # Build up just one vagrant ssh command since it's a bit slow to connect
     if File.exists?("#{root_loc}/apps/#{appname}/manage.py")
       if had_one == false
+        docker_commands.push("docker-compose start postgres")
         # Better not run anything until postgres is ready to accept connections...
         docker_commands.push("echo Waiting for postgres to finish initialising")
         docker_commands.push("/vagrant/scripts/guest/docker/postgres/wait-for-it.sh localhost")
         had_one = true
       end
       puts colorize_pink("Found some in #{appname}")
+      docker_commands.push("docker-compose start #{appname}")
       docker_commands.push("docker exec #{appname} bash -c 'cd /src && python3 manage.py db upgrade'")
+      docker_commands.push("docker-compose stop #{appname}")
     end
   end
   unless docker_commands.empty?
