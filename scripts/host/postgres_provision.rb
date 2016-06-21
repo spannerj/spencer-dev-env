@@ -38,6 +38,7 @@ def provision_postgres(root_loc)
     if prepare_postgres(root_loc)
       puts colorize_lightblue("Provisioning Postgres")
       docker_commands = []
+      docker_commands.push("docker-compose start postgres")
       # Better not run anything until postgres is ready to accept connections...
       docker_commands.push("echo Waiting for postgres to finish initialising")
       docker_commands.push("/vagrant/scripts/guest/docker/postgres/wait-for-it.sh localhost")

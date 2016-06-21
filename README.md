@@ -8,6 +8,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.2.1** Updated base vagrant box version, fixed a few provisioning bugs
 * **v0.2** First public release
 
 # Pre-requisites
@@ -140,7 +141,12 @@ This file is a shell script that contains curl commands to do any setup the app 
 
 # Useful commands
 
-`docker-compose rm -v -f CONTAINERNAME` - completely destroys a container and it's data
+(In the below examples you can leave out CONTAINERNAME and all containers will be affected)
 
-`docker-compose restart CONTAINERNAME` - brings a container down and up again. Leave out the container name to restart all of them.
+`docker-compose rm -v -f CONTAINERNAME` - Stops and removes a container and it's data.
 
+`docker-compose down --rmi all -v --remove-orphans` - Stops and removes all containers, data, and images created by up.
+
+`docker-compose stop|start|restart CONTAINERNAME` - Starts, stops or restarts a container (it must already be built and created)
+
+`docker-compose up --build -d CONTAINERNAME` - Checks if a container needs rebuilding and rebuilds/recreates/restarts it if so, otherwise does nothing.

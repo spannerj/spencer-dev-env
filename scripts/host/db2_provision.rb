@@ -38,7 +38,7 @@ def provision_db2(root_loc)
     if prepare_db2(root_loc)
       puts colorize_lightblue("Provisioning DB2")
       # Run the the command "db2 bash -c '~/sqllib/bin/db2 -tvf /init.sql" inside the db2 docker container
-      system  "vagrant ssh -c \"docker cp /vagrant/.db2_init.sql db2:/init.sql && docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2 -tvf /init.sql'\""
+      system  "vagrant ssh -c \"docker-compose start db2 && docker cp /vagrant/.db2_init.sql db2:/init.sql && docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2 -tvf /init.sql'\""
       # Update the .commodities.yml to indicate that db2 has now been provisioned
       set_commodity_provision_status(root_loc, "db2", true)
     end

@@ -3,7 +3,7 @@
 # Based on CentOS
 ######################################################################
 
-# Set the base image to Centos. NOTE: By specifying the minor version tag, it will not receive updates!
+# Set the base image
 FROM lr_base_python
 
 # Install gunicorn and eventlet
