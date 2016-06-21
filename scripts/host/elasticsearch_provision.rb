@@ -32,15 +32,16 @@ def provision_elasticsearch(root_loc)
           docker_commands.push("docker-compose start elasticsearch")
           # Better not run anything until elasticsearch is ready to accept connections...
           docker_commands.push("echo Waiting for elasticsearch to finish initialising")
-          docker_commands.push("/vagrant/scripts/guest/wait-for-it.sh -h localhost -p 9200")
+          docker_commands.push("/vagrant/scripts/guest/docker/elasticsearch/wait-for-it.sh http://localhost:9200")
           had_one = true
         end
         puts colorize_pink("Found some in #{appname}")
-        docker_commands.push("docker exec #{appname} bash -c '/src/fragments/elasticsearch-fragment.sh http://elasticsearch:9200'")
+        docker_commands.push("/vagrant/apps/#{appname}/fragments/elasticsearch-fragment.sh http://localhost:9200")
       end
     end
     unless docker_commands.empty?
       puts colorize_lightblue("Running elasticsearch provisioning")
+      puts docker_commands.join(" && ")
       system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
       # Update the .commodities.yml to indicate that elasticsearch has now been provisioned
       set_commodity_provision_status(root_loc, "elasticsearch", true)
