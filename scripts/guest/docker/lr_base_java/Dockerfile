@@ -4,7 +4,7 @@
 ######################################################################
 
 # Set the base image to Centos. NOTE: By specifying the minor version tag, it will not receive updates!
-FROM centos:centos7.1.1503
+FROM centos:centos7.2.1511
 
 # Install Java and zip file support
 RUN yum install -y -q java-1.8.0-openjdk-devel unzip wget

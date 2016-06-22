@@ -4,7 +4,7 @@
 ######################################################################
 
 # Set the base image to Centos. NOTE: By specifying the minor version tag, it will not receive updates!
-FROM centos:centos7.1.1503
+FROM centos:centos7.2.1511
 
 # To allow httpretty to install via pip3 (see https://github.com/pypa/pip/issues/1291)
 ENV LC_ALL en_US.UTF-8
