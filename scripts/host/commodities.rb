@@ -8,20 +8,22 @@ def create_commodities_list(root_loc)
 
   # Put all the commodities for all apps into an array
   commodity_list = []
-  config["applications"].each do |appname, appconfig|
-    # Load any commodities into the list
-    dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
-    next if dependencies.nil?
-    if dependencies.key?("commodities")
-      dependencies["commodities"].each do |appcommodity|
-        commodity_list.push(appcommodity)
-      end
+  if config["applications"]
+      config["applications"].each do |appname, appconfig|
+        # Load any commodities into the list
+        dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
+        next if dependencies.nil?
+        if dependencies.key?("commodities")
+          dependencies["commodities"].each do |appcommodity|
+            commodity_list.push(appcommodity)
+          end
+        end
     end
   end
-  
+
   # Remove duplicate commodities
   commodity_list = commodity_list.uniq
-    
+
   if File.exists?("#{root_loc}/.commodities.yml")
     commodity_file = YAML.load_file("#{root_loc}/.commodities.yml")
     # Check if each commodity we want is already there or not, add it if not
@@ -40,7 +42,7 @@ def create_commodities_list(root_loc)
       commodity_file["commodities"].push(commodity)
     end
   end
-  
+
   # Write the commodity information to a file
   File.open("#{root_loc}/.commodities.yml", 'w') {|f| f.write(commodity_file.to_yaml)}
 end
