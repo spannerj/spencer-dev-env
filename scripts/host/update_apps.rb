@@ -7,7 +7,7 @@ def update_apps(root_loc)
   root_loc = root_loc
   # Load configuration.yml into a Hash
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
-  if !(config["applications"] == nil)
+  if config["applications"]
       config["applications"].each do |appname, appconfig|
         puts colorize_green("================== #{appname} ==================")
 

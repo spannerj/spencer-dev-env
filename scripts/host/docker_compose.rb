@@ -8,7 +8,7 @@ def prepare_compose(root_loc)
 
   # Put all the apps into an array, as their compose file argument
   commodity_list = []
-  if !(config["applications"] == nil)
+  if config["applications"]
       config["applications"].each do |appname, appconfig|
         # If this app is docker, add it's compose to the list
         if File.exists?("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
