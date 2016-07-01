@@ -12,22 +12,22 @@ def prepare_postgres(root_loc)
   # Write the line we always need
   File.open("#{root_loc}/.postgres_init.sql", 'w') { |file| file.write("CREATE ROLE vagrant WITH LOGIN PASSWORD 'vagrant';") }
   if config["applications"]
-      config["applications"].each do |appname, appconfig|
-        # To help enforce the accuracy of the app's dependency file, only search for init sql
-        # if the app specifically specifies postgres in it's commodity list
-        dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
-        next if dependencies.nil?
-        has_postgres = dependencies.key?("commodities") && dependencies["commodities"].include?('postgres')
-        next if not has_postgres
+    config["applications"].each do |appname, appconfig|
+      # To help enforce the accuracy of the app's dependency file, only search for init sql
+      # if the app specifically specifies postgres in it's commodity list
+      dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
+      next if dependencies.nil?
+      has_postgres = dependencies.key?("commodities") && dependencies["commodities"].include?('postgres')
+      next if not has_postgres
 
-        # Load any SQL contained in the apps into the master file
-        if File.exists?("#{root_loc}/apps/#{appname}/fragments/postgres-init-fragment.sql")
-          puts colorize_pink("Found some in #{appname}")
-          to_append = File.read("#{root_loc}/apps/#{appname}/fragments/postgres-init-fragment.sql")
-          File.open("#{root_loc}/.postgres_init.sql", 'a') { |file| file.puts to_append }
-          prepared = true
-        end
+      # Load any SQL contained in the apps into the master file
+      if File.exists?("#{root_loc}/apps/#{appname}/fragments/postgres-init-fragment.sql")
+        puts colorize_pink("Found some in #{appname}")
+        to_append = File.read("#{root_loc}/apps/#{appname}/fragments/postgres-init-fragment.sql")
+        File.open("#{root_loc}/.postgres_init.sql", 'a') { |file| file.puts to_append }
+        prepared = true
       end
+    end
   end
   return prepared
 end
