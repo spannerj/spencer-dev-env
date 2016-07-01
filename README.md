@@ -8,6 +8,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.2.2** Updated base container centos versions, updated gradle version in java box. Fixed #10.
 * **v0.2.1** Updated base vagrant box version, fixed a few provisioning bugs
 * **v0.2** First public release
 
@@ -145,7 +146,7 @@ This file is a shell script that contains curl commands to do any setup the app 
 
 `docker-compose rm -v -f CONTAINERNAME` - Stops and removes a container and it's data.
 
-`docker-compose down --rmi all -v --remove-orphans` - Stops and removes all containers, data, and images created by up.
+`docker-compose down --rmi all -v --remove-orphans` - Stops and removes all containers, data, and images created by up. Don't use `--rmi all` if you want to keep the images.
 
 `docker-compose stop|start|restart CONTAINERNAME` - Starts, stops or restarts a container (it must already be built and created)
 

@@ -26,25 +26,27 @@ def get_port_list(root_loc)
 
     # Loop through the apps, find the compose fragment, find the host port within
     # the fragment add it to port_list
-    config["applications"].each do |appname, appconfig|
-      # If this app is docker, add it's compose to the list
-      if File.exists?("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
-        compose_file = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
+    if config["applications"]
+      config["applications"].each do |appname, appconfig|
+        # If this app is docker, add it's compose to the list
+        if File.exists?("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
+          compose_file = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/docker-compose-fragment.yml")
 
-        compose_file["services"].each do |composeappname, composeappconfig|
-          # If the compose file has a port section
-          if composeappconfig.key?("ports")
-            # Currently assumes there is only one port to forward and that the
-            # first port in the string "port_number1:port_number2" is the host port
-            app_host_port = composeappconfig["ports"][0].split(":")[0]
-            port_list.push("#{app_host_port}:#{app_host_port}")
+          compose_file["services"].each do |composeappname, composeappconfig|
+            # If the compose file has a port section
+            if composeappconfig.key?("ports")
+              # Currently assumes there is only one port to forward and that the
+              # first port in the string "port_number1:port_number2" is the host port
+              app_host_port = composeappconfig["ports"][0].split(":")[0]
+              port_list.push("#{app_host_port}:#{app_host_port}")
+            end
           end
         end
       end
     end
   end
 
-  if is_commodity?(root_loc, "postgres") 
+  if is_commodity?(root_loc, "postgres")
     port_list.push("15432:5432")
   end
 
@@ -57,7 +59,7 @@ def get_port_list(root_loc)
   if is_commodity?(root_loc, "db2")
     port_list.push("50000:50000")
   end
-  
+
   if is_commodity?(root_loc, "elasticsearch")
     port_list.push("19200:9200")
     port_list.push("19300:9300")
