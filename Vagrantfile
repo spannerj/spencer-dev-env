@@ -165,7 +165,7 @@ Vagrant.configure(2) do |config|
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
     puts colorize_lightblue("Starting containers")
-    if YAML.load_file(File.dirname(__FILE__) + "/dev-env-project/configuration.yml")["applications"]
+    if File.open('.docker-compose-file-list').lines.any?{|line| line.include?(':')}
       system "vagrant ssh -c \"docker-compose up --no-build -d \""
     else
       puts colorize_yellow("No containers to start.")
