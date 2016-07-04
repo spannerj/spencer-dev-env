@@ -8,6 +8,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.2.3** Fixed docker errors during vagrant up when no (docker) applications are specified in the configuration (#12)
 * **v0.2.2** Updated base container centos versions, updated gradle version in java box. Fixed #10.
 * **v0.2.1** Updated base vagrant box version, fixed a few provisioning bugs
 * **v0.2** First public release

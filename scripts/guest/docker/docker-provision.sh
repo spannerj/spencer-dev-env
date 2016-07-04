@@ -12,16 +12,17 @@ sed -i -e 's/.*COMPOSE_FILE.*//' ${HOME}/.bash_profile
 echo "export COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME'" >> ${HOME}/.bash_profile
 echo "export COMPOSE_FILE='$COMPOSE_FILE'" >> ${HOME}/.bash_profile
 
-#TODO if docker list empty, don't do docker stuff'
+# If there's docker apps (the var is not empty), then do docker stuff
+if ! [ -z "$COMPOSE_FILE" ]; then
+  echo "- - - (Re)building docker images (volumes kept) - - -"
+  /usr/local/bin/docker-compose build
 
-echo "- - - (Re)building docker images (volumes kept) - - -"
-/usr/local/bin/docker-compose build
+  # Workaround because docker-compose create doesn't create network (only up does) and it's needed to create the containers
+  docker network create dv_default
 
-# Workaround because docker-compose create doesn't create network (only up does) and it's needed to create the containers
-docker network create dv_default
-
-echo "- - - (Re)creating docker containers - - -"
-/usr/local/bin/docker-compose create --no-build
+  echo "- - - (Re)creating docker containers - - -"
+  /usr/local/bin/docker-compose create --no-build
+fi
 
 echo "- - - Removing any orphaned docker volumes - - -"
 docker volume ls -qf dangling=true | xargs -r docker volume rm
