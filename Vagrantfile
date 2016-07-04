@@ -165,7 +165,11 @@ Vagrant.configure(2) do |config|
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
     puts colorize_lightblue("Starting containers")
-    system "vagrant ssh -c \"docker-compose up --no-build -d \""
+    if File.open('.docker-compose-file-list').lines.any?{|line| line.include?(':')}
+      system "vagrant ssh -c \"docker-compose up --no-build -d \""
+    else
+      puts colorize_yellow("No containers to start.")
+    end
 
     # If the dev env configuration repo contains a script, run it here
     # This should only be for temporary use during early app development - see the README for more info
