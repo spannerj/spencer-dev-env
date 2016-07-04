@@ -164,8 +164,8 @@ Vagrant.configure(2) do |config|
     provision_elasticsearch(File.dirname(__FILE__))
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
-    puts colorize_lightblue("Starting containers")
-    if File.open('.docker-compose-file-list').lines.any?{|line| line.include?(':')}
+    if File.size(File.dirname(__FILE__) + '/.docker-compose-file-list') != 0
+      puts colorize_lightblue("Starting containers")
       system "vagrant ssh -c \"docker-compose up --no-build -d \""
     else
       puts colorize_yellow("No containers to start.")
