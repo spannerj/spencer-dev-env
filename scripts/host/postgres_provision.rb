@@ -9,7 +9,7 @@ def prepare_postgres(root_loc)
   # Load configuration.yml into a Hash
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
 
-  # Write the line we always need
+  # Write the line we always need (for backwards compatibility with apps that don't use their own username yet)
   File.open("#{root_loc}/.postgres_init.sql", 'w') { |file| file.write("CREATE ROLE vagrant WITH LOGIN PASSWORD 'vagrant';") }
   if config["applications"]
     config["applications"].each do |appname, appconfig|

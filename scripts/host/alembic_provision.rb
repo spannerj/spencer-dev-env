@@ -31,7 +31,7 @@ def provision_alembic(root_loc)
         end
         puts colorize_pink("Found some in #{appname}")
         docker_commands.push("docker-compose start #{appname}")
-        docker_commands.push("docker exec #{appname} bash -c 'cd /src && python3 manage.py db upgrade'")
+        docker_commands.push("docker exec #{appname} bash -c 'cd /src && export SQL_USE_ALEMBIC_USER=yes && python3 manage.py db upgrade'")
         docker_commands.push("docker-compose stop #{appname}")
       end
     end
