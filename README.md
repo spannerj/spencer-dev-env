@@ -3,6 +3,7 @@
 This repository contains the code for a universal development environment that can be used across teams and projects. It is designed to allow collections of applications to be loaded from a separate configuration repository, while using a consistent environment. It is the result of lessons learnt from many other team's experiences with their own development environments and contains heavily researched configration settings and optimisations.
 
 It provides several hooks for applications to take advantage of, including:
+
 * Docker container creation and launching via docker-compose (base Python/Flask/Java images are provided to extend from)
 * Automatic creation of commodity systems such as Postgres or Elasticsearch (with further hooks to allow for initial provisoning such as running SQL, Alembic DB upgrades or elasticsearch index creation)
 
@@ -16,9 +17,10 @@ It provides several hooks for applications to take advantage of, including:
 # Pre-requisites
 
 ## Software
+
 * [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0+)
 * [Vagrant](https://www.vagrantup.com/) (v1.8+))
- * Make sure you do **not** have the vagrant-vbguest plugin installed. Any plugins the environment needs will be installed automatically.
+  * Make sure you do **not** have the vagrant-vbguest plugin installed. Any plugins the environment needs will be installed automatically.
 * **_Windows users only_** [Git For Windows](http://git-for-windows.github.io) (download the portable zip version to get around any admin requirements) All the instructions in this README assume that you will be using Git Bash/MINGW64 which comes as part of this. It gives you a Unix-like shell and commands which make life much easier. While this software is technically optional, getting everything to work in the normal Windows command line is not covered here.
 
 ## Git/SSH
@@ -26,6 +28,7 @@ It provides several hooks for applications to take advantage of, including:
 You must ensure the terminal you are starting the virtual machine from can access all the necessary Git repositories (depending where your config repo and application repos are - Internal GitLab, AWS GitLab, GitHub) via SSH. This usually means having all the appropriate keys in your SSH-agent. 
 
 ### Generation
+
 To generate key(s) you can run `ssh-keygen -t rsa -b 4096 -C "your_email@example.com"`. You will then need to add them to your account's SSH Keys section on the relevent web site ([GitLab](http://docs.gitlab.com/ce/gitlab-basics/create-your-ssh-keys.html)/[GitHub](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/))
 
 ### Adding to agent
@@ -38,6 +41,7 @@ In your .bashrc or .zshrc add the following lines:
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
 ```
+
 Repeat the `ssh-add` line for each key, changing the filename as appropriate.
 
 #### Windows
@@ -60,6 +64,7 @@ If this is the first time you are launching the machine you will be prompted for
 [Example (workflow alpha)](http://git.lr.net/workflow/universal-devenv-workflow)
 
 ### `configuration.yml` (Mandatory)
+
 The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly. 
 
 [Example](http://192.168.249.38/common/dev-env/snippets/3)
@@ -87,6 +92,7 @@ To run an app, this environment uses Docker containers. So any app that wishes t
 #### `/fragments/docker-compose-fragment.yml`
 
 If this file exists, it will be used to construct the container (after building the image from the Dockerfile - see below) and then launch it. The standard rules are:
+
 * Container name and service name should match
 * The ports entry should map the internal Docker port to the app's default unique port as specified in it's configuration files
 * The volumes entry should map the path of the app folder in the vagrant machine to /src. 
@@ -97,6 +103,7 @@ If this file exists, it will be used to construct the container (after building 
 #### `/Dockerfile`
 
 This is the file that contructs the application container image. The standard rules are:
+
 * There are base images provided that the app should extend (lr_base_python, lr_base_python_flask and lr_base_java - they have their own Dockerfiles in this repo that can be inspected if you wish to learn more about what they provide for you (for example, Flask provides a default command that runs gunicorn), but in general you can use the examples and just change the app-specific section to set variables and install any extra software via yum.
 * Any environment variables that need to change to make it work within Docker over and above the application defaults (usually variables that require hostnames) should be specified.
 * If there is a port environment variable, set it to 8080 (so that the docker-compose fragments are more consistent in their mappings)
