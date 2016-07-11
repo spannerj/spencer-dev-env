@@ -14,16 +14,6 @@ require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
 require 'fileutils'
 
-# If user is doing a reload, do a vagrant halt then up instead (keeping all parameters except the reload)
-# so that the up trigger works and we can do stuff while the machine is stopped
-if ['reload'].include? ARGV[0]
-  ARGV.shift # Remove the reload command
-  puts colorize_lightblue("Vagrant reload detected. I'm going to do a separate halt/up instead.")
-  # These have to be separate commands else ruby complains on the up
-  system ("vagrant halt")
-  exec "vagrant up #{ARGV.join(' ')}"
-end
-
 # If plugins have been installed, rerun the original vagrant command and abandon this one
 if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
@@ -65,8 +55,8 @@ Vagrant.configure(2) do |config|
     end
   end
 
-  #Only if vagrant up/resume do we want to create dev-env configuration
-  if ['up', 'resume'].include? ARGV[0]
+  # Only if vagrant up/resume do we want to create dev-env configuration
+  if ['up', 'resume', 'reload'].include? ARGV[0]
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_lightblue("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
@@ -77,7 +67,7 @@ Vagrant.configure(2) do |config|
       File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
     end
 
-    #Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
+    # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
     puts colorize_lightblue("Retrieving custom configuration repo files:")
     if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
       command_successful = system 'git', '-C', File.dirname(__FILE__) + '/dev-env-project', 'pull'
@@ -85,13 +75,13 @@ Vagrant.configure(2) do |config|
       command_successful = system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), File.dirname(__FILE__) + '/dev-env-project'
     end
 
-    #Error if git clone or pulling failed
+    # Error if git clone or pulling failed
     if command_successful == false
       puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project")
       exit 1
     end
 
-    #Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
+    # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
     update_apps(File.dirname(__FILE__))
 
@@ -141,16 +131,22 @@ Vagrant.configure(2) do |config|
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
   end
 
-  # Update Virtualbox Guest Additions
-  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
+  #### COMMENTING OUT GUEST ADDITIONS UPDATES START
+  # Reason: the base box now has 5.0 level additions.
+  # Also, the reboot step causes problems when doing a reload --provision now that we've had to remove the halt/up trick.
 
-  #Reload VM after Guest Additions have been installed, so that shared folders work.
-  #Always force reload last, after every provisioner has run, otherwise if a provisioner
-  #is set to always run it will get run twice.
-  config.vm.provision :reload
+  # Update Virtualbox Guest Additions
+  #config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
+
+  # Reload VM after Guest Additions have been installed, so that shared folders work.
+  # Always force reload last, after every provisioner has run, otherwise if a provisioner
+  # is set to always run it will get run twice.
+  #config.vm.provision :reload
+
+   #### COMMENTING OUT GUEST ADDITIONS UPDATES END
 
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
-  config.trigger.after [:up, :resume] do
+  config.trigger.after [:up, :resume, :reload] do
     # Check the apps for a postgres SQL snippet to add to the SQL that then gets run.
     # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group),
     # you'll need to delete the postgres container and it's volume else you'll get errors.
