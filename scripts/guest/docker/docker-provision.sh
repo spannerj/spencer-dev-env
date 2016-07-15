@@ -30,5 +30,5 @@ docker volume ls -qf dangling=true | xargs -r docker volume rm
 echo "- - - Removing any orphaned docker images - - -"
 images=$(docker images -f "dangling=true" -q)
 if [ -n "$images" ]; then
-  docker rmi $images
+  docker rmi -f $images
 fi
