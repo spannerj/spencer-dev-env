@@ -19,6 +19,13 @@ if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
 end
 
+# If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
+# So stop the apps now, just so they don't try to reload and run any new code.
+if ['reload'].include? ARGV[0] 
+  puts colorize_lightblue('Stopping apps')
+  system "vagrant ssh -c \"docker-compose stop\""
+end
+
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
 # As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
 DEV_ENV_CONTEXT_FILE = File.dirname(__FILE__) + "/.dev-env-context"
