@@ -20,7 +20,7 @@ It provides several hooks for applications to take advantage of, including:
 
 ## Software
 
-* [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0+)
+* [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0.14+)
 * [Vagrant](https://www.vagrantup.com/) (v1.8+))
   * Make sure you do **not** have the vagrant-vbguest plugin installed. Any plugins the environment needs will be installed automatically.
 * **_Windows users only_** [Git For Windows](http://git-for-windows.github.io) (download the portable zip version to get around any admin requirements) All the instructions in this README assume that you will be using Git Bash/MINGW64 which comes as part of this. It gives you a Unix-like shell and commands which make life much easier. While this software is technically optional, getting everything to work in the normal Windows command line is not covered here.
