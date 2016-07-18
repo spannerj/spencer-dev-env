@@ -9,6 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.2.5** Updates for split app/alembic DB users (#11) and increased reload reliability.
 * **v0.2.4** Fixed fatal error when doing a `vagrant reload` (#13)
 * **v0.2.3** Fixed docker errors during vagrant up when no (docker) applications are specified in the configuration (#12)
 * **v0.2.2** Updated base container centos versions, updated gradle version in java box. Fixed #10.
@@ -129,7 +130,7 @@ The commodities may require further files in order to set them up correctly, the
 
 #### `/fragments/postgres-init-fragment.sql` (postgres)
 
-This file contains any SQL to run in postgres during the initial setup - at the minimum it will normally be creating a database and assigning permissions to the vagrant user. For complete isolation from other applications, perhaps consider creating a database-specific user (especially if this would match usage in higher regions).
+This file contains any SQL to run in postgres during the initial setup - at the minimum it will normally be creating a database and an application-specific user.
 
 [Example](http://192.168.249.38/common/dev-env/snippets/4)
 
