@@ -6,13 +6,15 @@
 # Set the base image
 FROM lr_base_python
 
+# Port for gunicorn
+# Default to 8080, docker-compose can change this to the reserved port for this app
+ENV PORT 8080
+
+# Set the log level to DEBUG for development
+ENV FLASK_LOG_LEVEL DEBUG
+
+# Set commit (for the health route) to be local for development
+ENV COMMIT LOCAL
+
 # Install gunicorn and eventlet
 RUN pip3 -q install gunicorn eventlet
-
-# App images that extend this image will need to make sure this will run!! Or override it
-# * Assumes application source made available in src
-# * Eventlet used as an asycnhronous worker
-# * Access logfile rerouted to stderr
-# * Assumes entry point is application:app
-# * Enables auto reload on file change 
-CMD ["/usr/local/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "application:app", "--reload"]
