@@ -9,6 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.2.6** *BREAKING CHANGE* - Removed default CMD and SETTINGS env vars from base python/flask Dockerfiles. Apps must implement these themselves (although SETTINGS is not used in the current app structure).
 * **v0.2.5** Updates for split app/alembic DB users (#11) and increased reload reliability.
 * **v0.2.4** Fixed fatal error when doing a `vagrant reload` (#13)
 * **v0.2.3** Fixed docker errors during vagrant up when no (docker) applications are specified in the configuration (#12)
