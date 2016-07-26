@@ -9,9 +9,6 @@ FROM centos:centos7.2.1511
 # To allow httpretty to install via pip3 (see https://github.com/pypa/pip/issues/1291)
 ENV LC_ALL en_US.UTF-8
 
-# Default to development (can be overridden at runtime)
-ENV SETTINGS config.DevelopmentConfig
-
 # Force stdin, stdout and stderr to be totally unbuffered
 ENV PYTHONUNBUFFERED yes
 
@@ -26,5 +23,3 @@ RUN yum -q -y update && \
 # Install python 3 then upgrade pip to latest version. Everything needs it so it goes here
 RUN yum install -y https://raw.githubusercontent.com/LandRegistry-Ops/puppet-control/development/site/profiles/files/lr-python3-3.4.3-1.x86_64.rpm && \
   pip3 install --upgrade pip
-
-CMD /bin/bash /src/run.sh

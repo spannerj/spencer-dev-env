@@ -49,7 +49,9 @@ Vagrant.configure(2) do |config|
     config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
   elsif ENV.has_key?('USERPROFILE') # Windows default
     config.persistent_storage.location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
-  else # Linux/OSX default
+  elsif ENV.has_key?('HOME') # Linux/OSX default
+    config.persistent_storage.location = ENV['HOME'] + "/.vagrant.d/cache/docker_storage.vdi"
+  else # Last resort
     config.persistent_storage.location = "~/.vagrant.d/cache/docker_storage.vdi"
   end
   config.persistent_storage.size = 50000
