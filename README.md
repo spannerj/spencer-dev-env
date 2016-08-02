@@ -9,6 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.3.0** Added app-specific commodity provision tracking (#1). Fixed long line character overwriting issues in windows during SSH. Added aliases for common commands (#14).
 * **v0.2.6** *BREAKING CHANGE* - Removed default CMD and SETTINGS env vars from base python/flask Dockerfiles. Apps must implement these themselves (although SETTINGS is not used in the current app structure).
 * **v0.2.5** Updates for split app/alembic DB users (#11) and increased reload reliability.
 * **v0.2.4** Fixed fatal error when doing a `vagrant reload` (#13)
@@ -153,12 +154,14 @@ This file is a shell script that contains curl commands to do any setup the app 
 
 # Useful commands
 
-(In the below examples you can leave out CONTAINERNAME and all containers will be affected)
+(In the below docker-compose examples you can leave out CONTAINERNAME and all containers will be affected)
 
-`docker-compose rm -v -f CONTAINERNAME` - Stops and removes a container and it's data.
+`docker-compose rm -v -f CONTAINERNAME` (alias: remove) - Stops and removes a container and it's data.
 
 `docker-compose down --rmi all -v --remove-orphans` - Stops and removes all containers, data, and images created by up. Don't use `--rmi all` if you want to keep the images.
 
-`docker-compose stop|start|restart CONTAINERNAME` - Starts, stops or restarts a container (it must already be built and created)
+`docker-compose stop|start|restart CONTAINERNAME` (aliases: stop/start/restart) - Starts, stops or restarts a container (it must already be built and created)
 
-`docker-compose up --build -d CONTAINERNAME` - Checks if a container needs rebuilding and rebuilds/recreates/restarts it if so, otherwise does nothing.
+`docker-compose up --build -d CONTAINERNAME` (alias: rebuild) - Checks if a container needs rebuilding and rebuilds/recreates/restarts it if so, otherwise does nothing. Useful if you've just changed a requirements.txt file (or any Java code)
+
+`docker exec -it CONTAINERNAME bash` (alias: bashin) - gets you into a bash terminal inside a running container (useful for then running psql etc)
