@@ -25,3 +25,6 @@ yum -y -q --exclude=kernel\* update
 # Ruby
 # Run external script as vagrant user. Running as root does not play nicely with RVM
 sudo -i -u vagrant source /vagrant/scripts/guest/install-ruby.sh
+
+# Add helpful aliases (runs on every login)
+echo "source /vagrant/scripts/guest/add-aliases.sh" >> ${HOME}/.bash_profile
