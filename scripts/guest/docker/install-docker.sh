@@ -36,3 +36,4 @@ echo "- - - Building base docker python images - - -"
 docker build -t lr_base_python /vagrant/scripts/guest/docker/lr_base_python
 docker build -t lr_base_python_flask /vagrant/scripts/guest/docker/lr_base_python/flask
 docker build -t lr_base_java /vagrant/scripts/guest/docker/lr_base_java
+docker build -t lr_base_ruby /vagrant/scripts/guest/docker/lr_base_ruby
