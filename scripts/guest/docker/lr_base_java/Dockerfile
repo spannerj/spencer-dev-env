@@ -14,7 +14,8 @@ ENV PATH $GRADLE_HOME/bin:$PATH
 ENV GRADLE_INSTALLED_VERSION '2.14'
 
 # Install gradle
-RUN curl -O http://downloads.gradle.org/distributions/gradle-2.14-all.zip && \
-  unzip -oqd /opt/gradle gradle-2.14-all.zip && \
-  ln -sfn gradle-2.14 /opt/gradle/latest  && \
-  rm -f gradle-2.14-all.zip
+
+RUN wget -N https://services.gradle.org/distributions/gradle-2.14-all.zip
+RUN unzip -oqd /opt/gradle gradle-2.14-all.zip
+RUN ln -sfn gradle-2.14 /opt/gradle/latest
+RUN rm -f gradle-2.14-all.zip
