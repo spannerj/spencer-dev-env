@@ -18,7 +18,7 @@ def provision_db2(root_loc)
       # To help enforce the accuracy of the app's dependency file, only search for init sql 
       # if the app specifically specifies db2 in it's commodity list
       if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
-        puts("No configuration.yml found for %s" % [appname])
+        puts colorize_red("No configuration.yml found for %s" % [appname])
         next
       end
       dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")

@@ -14,7 +14,7 @@ def create_commodities_list(root_loc)
     config["applications"].each do |appname, appconfig|
       # Load any commodities into the list
 if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
-        puts("No configuration.yml found for %s" % [appname])
+        puts colorize_red("No configuration.yml found for %s" % [appname])
         next
       end
       dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
