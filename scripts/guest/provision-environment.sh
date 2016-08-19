@@ -20,6 +20,7 @@ echo 'cd /vagrant; # switch to workspace' >> ${HOME}/.bash_profile
 
 # Update all packages (except kernel files - prevents guest additions breakage)
 echo 'Updating all currently installed non-kernel packages'
+yum clean all
 yum -y -q --exclude=kernel\* update
 
 # Ruby

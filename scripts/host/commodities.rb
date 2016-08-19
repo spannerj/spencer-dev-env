@@ -13,6 +13,10 @@ def create_commodities_list(root_loc)
   if config["applications"]
     config["applications"].each do |appname, appconfig|
       # Load any commodities into the list
+if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
+        puts colorize_red("No configuration.yml found for %s" % [appname])
+        next
+      end
       dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
       next if dependencies.nil?
       if dependencies.key?("commodities")
@@ -27,30 +31,30 @@ def create_commodities_list(root_loc)
   # Remove duplicate commodities
   commodity_list = commodity_list.uniq
 
+  global_provisioned = []  
   if File.exists?("#{root_loc}/.commodities.yml")
     commodity_file = YAML.load_file("#{root_loc}/.commodities.yml")
+    if commodity_file["version"] == '2'
+      puts colorize_green("Found a version 2 .commodities file.")
+    else
+      puts colorize_yellow("Found a version 1 .commodities file. Upgrading to version 2...")
+      # Find any commodities that are already provisioned and add them to a list for later use when building the new file
+      new_commodity_file = {"version" => "2", "commodities" => [], "applications" => { }}
+      commodity_file["commodities"].each do |old_commodity|
+        old_commodity.each do |old_commodity_name, old_commodity_info|
+          if old_commodity_info["provisioned"] == true
+            global_provisioned.push(old_commodity_name)
+          end
+        end
+      end
+      commodity_file = new_commodity_file
+    end
   else
     # Create the base file structure
+    puts colorize_green("Did not find any .commodities file. I'll create a new one (v2).'")
     commodity_file = {"version" => "2", "commodities" => [], "applications" => { }}
   end
   
-  global_provisioned = []  
-  if commodity_file["version"] == '2'
-    puts colorize_green("Found a version 2 .commodities file.")
-  else
-    puts colorize_yellow("Found a version 1 .commodities file. Upgrading to version 2...")
-    # Find any commodities that are already provisioned and add them to a list for later use when building the new file
-    new_commodity_file = {"version" => "2", "commodities" => [], "applications" => { }}
-    commodity_file["commodities"].each do |old_commodity|
-      old_commodity.each do |old_commodity_name, old_commodity_info|
-        if old_commodity_info["provisioned"] == true
-          global_provisioned.push(old_commodity_name)
-        end
-      end
-    end
-    commodity_file = new_commodity_file
-  end
-
   # Rebuild the the master list
   commodity_file["commodities"] = commodity_list
   

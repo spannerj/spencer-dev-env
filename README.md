@@ -9,6 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.3.1** Many optimisations and fixes (#16, #18)
 * **v0.3.0** Added app-specific commodity provision tracking (#1). Fixed long line character overwriting issues in windows during SSH. Added aliases for common commands (#14).
 * **v0.2.6** *BREAKING CHANGE* - Removed default CMD and SETTINGS env vars from base python/flask Dockerfiles. Apps must implement these themselves (although SETTINGS is not used in the current app structure).
 * **v0.2.5** Updates for split app/alembic DB users (#11) and increased reload reliability.
