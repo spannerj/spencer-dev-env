@@ -13,12 +13,12 @@ def create_commodities_list(root_loc)
   if config["applications"]
     config["applications"].each do |appname, appconfig|
       # Load any commodities into the list
-      begin
-        dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
-        next if dependencies.nil?
-      rescue Errno::ENOENT
+      if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
         puts("No configuration.yml found for %s" % [appname])
+        next
       end
+      dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
+      next if dependencies.nil?
       if dependencies.key?("commodities")
         dependencies["commodities"].each do |appcommodity|
           commodity_list.push(appcommodity)
