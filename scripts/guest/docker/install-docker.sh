@@ -21,7 +21,8 @@ export PATH=$PATH:/usr/local/bin
 echo "export PATH=\$PATH:/usr/local/bin" > /etc/profile.d/add_local_bin.sh
 
 # Bash autocompletion of container names
-curl -L https://raw.githubusercontent.com/docker/compose/1.7.1/contrib/completion/bash/docker-compose > /etc/bash_completion.d/docker-compose
+wget -q https://raw.githubusercontent.com/docker/compose/1.7.1/contrib/completion/bash/docker-compose
+mv -f docker-compose /etc/bash_completion.d/docker-compose
 
 echo "- - - Removing all existing docker containers (and their data volumes) - - -"
 docker ps -a -q | xargs docker rm -v -f
