@@ -20,6 +20,10 @@ def provision_elasticsearch(root_loc)
     config["applications"].each do |appname, appconfig|
       # To help enforce the accuracy of the app's dependency file, only search for init scripts
       # if the app specifically specifies elasticsearch in it's commodity list
+      if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
+        puts("No configuration.yml found for %s" % [appname])
+        next
+      end
       dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
       next if dependencies.nil?
       has_elasticsearch = dependencies.key?("commodities") && dependencies["commodities"].include?('elasticsearch')

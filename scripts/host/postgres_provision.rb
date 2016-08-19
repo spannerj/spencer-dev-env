@@ -26,6 +26,10 @@ def provision_postgres(root_loc)
     config["applications"].each do |appname, appconfig|
       # To help enforce the accuracy of the app's dependency file, only search for init sql
       # if the app specifically specifies postgres in it's commodity list
+      if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
+        puts("No configuration.yml found for %s" % [appname])
+        next
+      end
       dependencies = YAML.load_file("#{root_loc}/apps/#{appname}/configuration.yml")
       next if dependencies.nil?
       has_postgres = dependencies.key?("commodities") && dependencies["commodities"].include?('postgres')
