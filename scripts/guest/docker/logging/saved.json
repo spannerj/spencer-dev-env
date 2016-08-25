@@ -1,0 +1,93 @@
+[
+  {
+    "_id": "Separated-overview",
+    "_type": "dashboard",
+    "_source": {
+      "title": "Separated overview",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[{\"id\":\"Automatically-logged\",\"type\":\"search\",\"panelIndex\":2,\"size_x\":6,\"size_y\":6,\"col\":1,\"row\":1,\"columns\":[\"containername\",\"level\",\"msg\",\"exception\",\"traceid\"],\"sort\":[\"@timestamp\",\"desc\"]},{\"id\":\"Manually-logged\",\"type\":\"search\",\"panelIndex\":3,\"size_x\":6,\"size_y\":6,\"col\":7,\"row\":1,\"columns\":[\"containername\",\"level\",\"msg\",\"exception\",\"traceid\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
+      "optionsJSON": "{\"darkTheme\":false}",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "timeRestore": true,
+      "timeTo": "now/d",
+      "timeFrom": "now/d",
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}}}]}"
+      }
+    }
+  },
+  {
+    "_id": "Everything",
+    "_type": "search",
+    "_source": {
+      "title": "Everything",
+      "description": "",
+      "hits": 0,
+      "columns": [
+        "containername",
+        "level",
+        "msg",
+        "exception",
+        "traceid"
+      ],
+      "sort": [
+        "@timestamp",
+        "desc"
+      ],
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647},\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}}}"
+      }
+    }
+  },
+  {
+    "_id": "Manually-logged",
+    "_type": "search",
+    "_source": {
+      "title": "Manually logged",
+      "description": "",
+      "hits": 0,
+      "columns": [
+        "containername",
+        "level",
+        "msg",
+        "exception",
+        "traceid"
+      ],
+      "sort": [
+        "@timestamp",
+        "desc"
+      ],
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647},\"query\":{\"query_string\":{\"query\":\"_exists_:level\",\"analyze_wildcard\":true}}}"
+      }
+    }
+  },
+  {
+    "_id": "Automatically-logged",
+    "_type": "search",
+    "_source": {
+      "title": "Automatically logged",
+      "description": "",
+      "hits": 0,
+      "columns": [
+        "containername",
+        "level",
+        "msg",
+        "exception",
+        "traceid"
+      ],
+      "sort": [
+        "@timestamp",
+        "desc"
+      ],
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647},\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"_missing_:level\"}}}"
+      }
+    }
+  }
+]
