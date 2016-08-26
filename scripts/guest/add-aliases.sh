@@ -14,7 +14,7 @@ function bashin(){
 }
 
 function unit-test(){
-    docker-compose exec ${@:1} bash /src/unit_test.sh
+    docker-compose exec ${1} bash /src/unit_test.sh ${2}
 }
 
 function integration-test(){
