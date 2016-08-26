@@ -7,9 +7,22 @@ alias rebuild="docker-compose up --build -d "
 alias remove="docker-compose rm -v -f "
 alias logs="docker-compose logs"
 alias exec="docker-compose exec"
+alias status="docker-compose ps"
 
 function bashin(){
     docker exec -it ${@:1} bash
+}
+
+function unit-test(){
+    docker-compose exec ${@:1} bash /src/unit_test.sh
+}
+
+function integration-test(){
+    docker-compose exec ${@:1} bash /src/integration_test.sh
+}
+
+function psql(){
+    docker-compose exec postgres psql -h postgres -U root -d ${@:1}
 }
 
 # Automatically add completion for all aliases to commands having completion functions
