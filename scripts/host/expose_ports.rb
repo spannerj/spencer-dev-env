@@ -46,11 +46,15 @@ def get_port_list(root_loc)
     end
   end
 
+  if is_commodity?(root_loc, "logging")
+    port_list.push("15601:5601")
+  end
+
   if is_commodity?(root_loc, "postgres")
     port_list.push("15432:5432")
   end
 
-  #If rabbitmq is being used then expose the rabbitmq admin port
+  # If rabbitmq is being used then expose the rabbitmq admin port
   if is_commodity?(root_loc, "rabbitmq")
     port_list.push("35672:5672")
     port_list.push("45672:15672")
