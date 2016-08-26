@@ -8,10 +8,11 @@ FROM centos:centos7.2.1511
 
 # Update system, despite a warning against this: https://docs.docker.com/articles/dockerfile_best-practices/#run
 # The official CentOS Dockerfiles repo recommends it: https://github.com/CentOS/CentOS-Dockerfiles/blob/master/nginx/centos7/Dockerfile#L10
-# Then install rbenv system dependencies
 RUN yum clean all && \
-  yum -y update && \
-  yum install -y gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel \
+  yum -q -y update
+
+# Install rbenv system dependencies
+RUN yum install -y gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel \
   openssl-devel make bzip2 autoconf automake libtool bison iconv-devel git-core
 
 # Create the unprivileged application user and switch user

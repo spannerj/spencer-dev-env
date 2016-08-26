@@ -9,6 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.4.0** Added ELK stack support (#2) - see the [Logging section](#logging) for instructions. Reworked base Dockerfiles for increased efficiency and support for skeleton unit test structure. More aliases added, and tab-complete enabled for all aliases.
 * **v0.3.1** Many optimisations and fixes (#16, #18)
 * **v0.3.0** Added app-specific commodity provision tracking (#1). Fixed long line character overwriting issues in windows during SSH. Added aliases for common commands (#14).
 * **v0.2.6** *BREAKING CHANGE* - Removed default CMD and SETTINGS env vars from base python/flask Dockerfiles. Apps must implement these themselves (although SETTINGS is not used in the current app structure).
@@ -100,8 +101,9 @@ If this file exists, it will be used to construct the container (after building 
 
 * Container name and service name should match
 * The ports entry should map the internal Docker port to the app's default unique port as specified in it's configuration files
-* The volumes entry should map the path of the app folder in the vagrant machine to /src. 
+* The volumes entry should map the path of the app folder in the vagrant machine to /src.
 * There should be no volumes entry for compiled apps such as Java as the files are already in the image.
+* If the provided ELK stack is to be used, then a syslog logging driver needs to be present, forwarding to logstash.
 
 [Example](http://192.168.249.38/common/dev-env/snippets/8)
 
@@ -152,6 +154,16 @@ This file contains any SQL to run in DB2 during the initial setup - at the minim
 This file is a shell script that contains curl commands to do any setup the app needs in elasticsearch - creating indexes etc. It will be passed a single argument, the hostname, which can be accessed in the script using `$1`.
 
 [Example](http://192.168.249.38/common/dev-env/snippets/5)
+
+## Logging
+
+An ELK stack is created if any application requests the "logging" commodity. It will capture the output of any containers that are configured (via their docker-compose-fragment) to forward their messages to logstash via syslog.
+
+Once some logs have been, well, logged, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it!
+
+There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page.
+
+To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
 
 # Useful commands
 
