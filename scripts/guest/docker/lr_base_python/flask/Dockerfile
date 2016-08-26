@@ -16,5 +16,10 @@ ENV FLASK_LOG_LEVEL DEBUG
 # Set commit (for the health route) to be local for development
 ENV COMMIT LOCAL
 
+# Added this environment variable so that pytest can import the application package.
+ENV PYTHONPATH /src
+
+WORKDIR /src
+
 # Install gunicorn and eventlet
 RUN pip3 -q install gunicorn eventlet
