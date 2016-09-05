@@ -6,7 +6,7 @@
       "title": "Separated overview",
       "hits": 0,
       "description": "",
-      "panelsJSON": "[{\"id\":\"Automatically-logged\",\"type\":\"search\",\"panelIndex\":2,\"size_x\":6,\"size_y\":6,\"col\":1,\"row\":1,\"columns\":[\"containername\",\"level\",\"msg\",\"exception\",\"traceid\"],\"sort\":[\"@timestamp\",\"desc\"]},{\"id\":\"Manually-logged\",\"type\":\"search\",\"panelIndex\":3,\"size_x\":6,\"size_y\":6,\"col\":7,\"row\":1,\"columns\":[\"containername\",\"level\",\"msg\",\"exception\",\"traceid\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
+      "panelsJSON": "[{\"id\":\"Automatically-logged\",\"type\":\"search\",\"panelIndex\":2,\"size_x\":6,\"size_y\":6,\"col\":1,\"row\":1,\"columns\":[\"containername\",\"level\",\"message\",\"exception\",\"traceid\"],\"sort\":[\"@timestamp\",\"desc\"]},{\"id\":\"Manually-logged\",\"type\":\"search\",\"panelIndex\":3,\"size_x\":6,\"size_y\":6,\"col\":7,\"row\":1,\"columns\":[\"containername\",\"level\",\"message\",\"exception\",\"traceid\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
       "optionsJSON": "{\"darkTheme\":false}",
       "uiStateJSON": "{}",
       "version": 1,
@@ -28,7 +28,7 @@
       "columns": [
         "containername",
         "level",
-        "msg",
+        "message",
         "exception",
         "traceid"
       ],
@@ -52,7 +52,7 @@
       "columns": [
         "containername",
         "level",
-        "msg",
+        "message",
         "exception",
         "traceid"
       ],
@@ -76,7 +76,7 @@
       "columns": [
         "containername",
         "level",
-        "msg",
+        "message",
         "exception",
         "traceid"
       ],
