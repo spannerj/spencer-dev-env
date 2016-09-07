@@ -11,11 +11,17 @@ RUN yum install -y -q java-1.8.0-openjdk-devel unzip wget which
 
 ENV GRADLE_HOME /opt/gradle/latest
 ENV PATH $GRADLE_HOME/bin:$PATH
-ENV GRADLE_INSTALLED_VERSION '2.14'
+ENV GRADLE_INSTALLED_VERSION '3.0'
 
 # Install gradle
 
-RUN wget -q https://downloads.gradle.org/distributions/gradle-2.14-all.zip && \
-  unzip -oqd /opt/gradle gradle-2.14-all.zip && \
-  ln -sfn gradle-2.14 /opt/gradle/latest && \
-  rm -f gradle-2.14-all.zip
+RUN wget -q https://downloads.gradle.org/distributions/gradle-3.0-all.zip && \
+  unzip -oqd /opt/gradle gradle-3.0-all.zip && \
+  ln -sfn gradle-3.0 /opt/gradle/latest && \
+  rm -f gradle-3.0-all.zip
+
+# Default directory to run the app from
+WORKDIR /src
+
+# Run gradle using the compiled classes (not creating a fat jar for deployment)
+CMD ["gradle", "run"]
