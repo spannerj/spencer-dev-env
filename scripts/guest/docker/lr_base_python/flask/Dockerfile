@@ -11,7 +11,7 @@ FROM lr_base_python
 ENV PORT 8080
 
 # Set the log level to DEBUG for development
-ENV FLASK_LOG_LEVEL DEBUG
+ENV LOG_LEVEL DEBUG
 
 # Set commit (for the health route) to be local for development
 ENV COMMIT LOCAL
