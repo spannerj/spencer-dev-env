@@ -8,6 +8,7 @@ alias remove="docker-compose rm -v -f "
 alias logs="docker-compose logs"
 alias exec="docker-compose exec"
 alias status="docker-compose ps"
+alias psql="docker-compose exec postgres psql -h postgres -U root -d "
 
 function bashin(){
     docker exec -it ${@:1} bash
@@ -21,23 +22,13 @@ function integration-test(){
     docker-compose exec ${1} python3 manage.py integrationtest
 }
 
-function psql(){
-    docker-compose exec postgres psql -h postgres -U root -d ${@:1}
-}
-
 function manage(){
     docker-compose exec ${1} python3 manage.py ${@:2}
 }
 
 function devenv-help(){
   cat <<EOF
-    If typing a docker-compose command you can use the alias dc instead. For example
-
-        dc ps
-
-    rather than
-
-        docker-compose ps
+    If typing a docker-compose command you can use the alias dc instead. For example "dc ps" rather than "docker-compose ps".
 
     status                                           -     to view the status of all running containers
     stop <name of container>                         -     to stop a container
@@ -53,7 +44,7 @@ function devenv-help(){
     integration-test <name of container>             -     to run the integration tests for an application (this expects
                                                            there to a be a manage.py with a integrationtest command)
     psql <name of database>                          -     to run psql in the postgres container
-    manage <name of container> <command>             -     to run manage.py commands in a container      
+    manage <name of container> <command>             -     to run manage.py commands in a container
 EOF
 }
 

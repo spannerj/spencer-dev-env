@@ -31,7 +31,7 @@ It provides several hooks for applications to take advantage of, including:
 
 ## Git/SSH
 
-You must ensure the terminal you are starting the virtual machine from can access all the necessary Git repositories (depending where your config repo and application repos are - Internal GitLab, AWS GitLab, GitHub) via SSH. This usually means having all the appropriate keys in your SSH-agent. 
+You must ensure the terminal you are starting the virtual machine from can access all the necessary Git repositories (depending where your config repo and application repos are - Internal GitLab, AWS GitLab, GitHub) via SSH. This usually means having all the appropriate keys in your SSH-agent.
 
 ### Generation
 
@@ -52,7 +52,7 @@ Repeat the `ssh-add` line for each key, changing the filename as appropriate.
 
 #### Windows
 
-Copy the contents of [this script snippet](http://192.168.249.38/common/dev-env/snippets/1) into your `~/.bash_profile` file, this will ensure all your keys get loaded into the agent (and only one agent executable ever runs). 
+Copy the contents of [this script snippet](http://192.168.249.38/common/dev-env/snippets/1) into your `~/.bash_profile` file, this will ensure all your keys get loaded into the agent (and only one agent executable ever runs).
 
 Note that this assumes that all the keys are placed in `~/.ssh` and all their names end in `_rsa`. If not, you will need to modify the script accordingly to load the right filenames.
 
@@ -71,7 +71,7 @@ If this is the first time you are launching the machine you will be prompted for
 
 ### `configuration.yml` (Mandatory)
 
-The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly. 
+The file lists the apps that should be pulled down, along with the (SSH) URL of their Git repository and which branch should be made active. The name of the app must match the repository name so that things like volume mappings in the app's docker-compose will hang together correctly.
 
 [Example](http://192.168.249.38/common/dev-env/snippets/3)
 
@@ -131,7 +131,7 @@ This file lives in the root of the application and specifies which commodities t
 
 [Example](http://192.168.249.38/common/dev-env/snippets/2)
 
-The commodities may require further files in order to set them up correctly, these are detailed below. Note that unless specified, any  fragment files will only be run once. This is controlled by a generated `.commodities.yml` file in the root of the dev-env, which you can change to allow the files to be read again - useful if you've added a new app to the configuration file 
+The commodities may require further files in order to set them up correctly, these are detailed below. Note that unless specified, any  fragment files will only be run once. This is controlled by a generated `.commodities.yml` file in the root of the dev-env, which you can change to allow the files to be read again - useful if you've added a new app to the configuration file
 
 #### `/fragments/postgres-init-fragment.sql` (postgres)
 
@@ -167,14 +167,41 @@ To import them, go to Settings/Objects/Import and browse to `saved.json` in `/sc
 
 # Useful commands
 
-(In the below docker-compose examples you can leave out CONTAINERNAME and all containers will be affected)
+If you hate typing long commands then the commands below have been added to the dev-env for you:
 
-`docker-compose rm -v -f CONTAINERNAME` (alias: remove) - Stops and removes a container and it's data.
+```
+status                                           -     view the status of all running containers
+stop <name of container>                         -     stop a container
+start <name of container>                        -     start a container
+restart <name of container>                      -     restart a container
+logs <name of container>                         -     view the logs of a container
+exec <name of container> <command to execute>    -     execute a command in a running container
+remove <name of container>                       -     remove a container
+rebuild <name of container>                      -     rebuild a container and run it in the background
+bashin <name of container>                       -     bash in to a container
+unit-test <name of container>                    -     run the unit tests for an application (this expects there to a be a manage.py with a unittest command)
+integration-test <name of container>             -     run the integration tests for an application (this expects there to a be a manage.py with a integrationtest command)
+psql <name of database>                          -     run psql in the postgres container
+manage <name of container> <command>             -     run manage.py commands in a container
+```
 
-`docker-compose down --rmi all -v --remove-orphans` - Stops and removes all containers, data, and images created by up. Don't use `--rmi all` if you want to keep the images.
+If you prefer using docker or docker-compose directly then below is list of useful commands (note: if you leave out <name of container> then all containers will be affected):
 
-`docker-compose stop|start|restart CONTAINERNAME` (aliases: stop/start/restart) - Starts, stops or restarts a container (it must already be built and created)
+```
+docker-compose run --rm <name of container> <command>    -    spin up a temporary container and run a command in it         
+docker-compose rm -v -f <name of container>              -    remove a container
+docker-compose down --rmi all -v --remove-orphans        -    stops and removes all containers, data, and images created by up. Don't use `--rmi all` if you want to keep the images.
+docker-compose up --build -d <name of container>         -    (alias: rebuild) checks if a container needs rebuilding and rebuilds/recreates/restarts it if so, otherwise does nothing. Useful if you've just changed a requirements.txt file (or any Java code)
+docker-compose stop|start|restart <name of container>    -    (aliases: stop/start/restart) starts, stops or restarts a container (it must already be built and created)
+docker exec -it <name of container> bash                 -    (alias: bashin) gets you into a bash terminal inside a running container (useful for then running psql etc)
+```
 
-`docker-compose up --build -d CONTAINERNAME` (alias: rebuild) - Checks if a container needs rebuilding and rebuilds/recreates/restarts it if so, otherwise does nothing. Useful if you've just changed a requirements.txt file (or any Java code)
+For those who get bored typing docker-compose you can use the alias dc instead. For example "dc ps" rather than "docker-compose ps".
 
-`docker exec -it CONTAINERNAME bash` (alias: bashin) - gets you into a bash terminal inside a running container (useful for then running psql etc)
+## Adding Breakpoints to Applications Running in Containers
+
+In order to interact with breakpoints that you add to your applications you need to run the container in the foreground and attach to the container terminal. You do that like so:
+
+```
+docker-compose run --rm --service-ports <name of container>
+```
