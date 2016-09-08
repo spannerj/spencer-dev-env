@@ -21,4 +21,10 @@ WORKDIR /src
 # Install gunicorn and eventlet
 RUN pip3 -q install gunicorn eventlet
 
+# The command to run the app.
+#   Eventlet is used as the (asynch) worker.
+#   The python source folder is /src (mapped to outside file system in docker-compose-fragment)
+#   Access log is redirected to stderr.
+#   Flask app object is located in manage.py
+#   Dynamic reloading is enabled.
 CMD ["/usr/local/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "manage:manager.app", "--reload"]
