@@ -20,3 +20,5 @@ WORKDIR /src
 
 # Install gunicorn and eventlet
 RUN pip3 -q install gunicorn eventlet
+
+CMD ["/usr/local/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "manage:manager.app", "--reload"]
