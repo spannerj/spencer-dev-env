@@ -9,6 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
+* **v0.4.2** Updated base Java Dockerfile to Grade 3, and removed compilation during build - instead uses shared folder and gradle run. Added manage and devenv-help aliases. Updated logstash config to better cope with multiple line traces. Added LOG_LEVEL into base python Dockerfile to support latest skeleton.
 * **v0.4.1** Updated Logstash config and Kibana saved searches to use new JSON log format.
 * **v0.4.0** Added ELK stack support (#2) - see the [Logging section](#logging) for instructions. Reworked base Dockerfiles for increased efficiency and support for skeleton unit test structure. More aliases added, and tab-complete enabled for all aliases.
 * **v0.3.1** Many optimisations and fixes (#16, #18)
