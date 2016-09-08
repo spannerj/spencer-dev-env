@@ -20,6 +20,9 @@ ENV PYTHONUNBUFFERED yes
 # Set the log level to DEBUG for development
 ENV LOG_LEVEL DEBUG
 
+# DEPERECATED, HERE FOR TEMP BACK COMPAT ONLY: USE LOG_LEVEL INSTEAD
+ENV FLASK_LOG_LEVEL DEBUG
+
 # Install dev tools to allow python modules with native code (like markupsafe) to compile
 RUN yum -q -y groupinstall "Development Tools" --skip-broken && \
   yum -q -y install wget
