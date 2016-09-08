@@ -8,21 +8,44 @@ alias remove="docker-compose rm -v -f "
 alias logs="docker-compose logs"
 alias exec="docker-compose exec"
 alias status="docker-compose ps"
+alias psql="docker-compose exec postgres psql -h postgres -U root -d "
 
 function bashin(){
     docker exec -it ${@:1} bash
 }
 
 function unit-test(){
-    docker-compose exec ${1} bash /src/unit_test.sh ${2}
+    docker-compose exec ${1} python3 manage.py unittest ${2}
 }
 
 function integration-test(){
-    docker-compose exec ${@:1} bash /src/integration_test.sh
+    docker-compose exec ${1} python3 manage.py integrationtest
 }
 
-function psql(){
-    docker-compose exec postgres psql -h postgres -U root -d ${@:1}
+function manage(){
+    docker-compose exec ${1} python3 manage.py ${@:2}
+}
+
+function devenv-help(){
+  cat <<EOF
+    If typing a docker-compose command you can use the alias dc instead. For example "dc ps" rather than "docker-compose ps".
+
+    status                                           -     to view the status of all running containers
+    stop <name of container>                         -     to stop a container
+    start <name of container>                        -     to start a container
+    restart <name of container>                      -     to restart a container
+    logs <name of container>                         -     to view the logs of a container
+    exec <name of container> <command to execute>    -     to execute a command in a running container
+    remove <name of container>                       -     to remove a container
+    rebuild <name of container>                      -     to rebuild a container and run it in the background
+    bashin <name of container>                       -     to bash in to a container
+    unit-test <name of container>                    -     to run the unit tests for an application (this expects there
+                                                           to a be a manage.py with a unittest command)
+    integration-test <name of container>             -     to run the integration tests for an application (this expects
+                                                           there to a be a manage.py with a integrationtest command)
+    psql <name of database>                          -     to run psql in the postgres container
+    manage <name of container> <command>             -     to run manage.py commands in a container
+EOF
 }
 
 # Automatically add completion for all aliases to commands having completion functions
