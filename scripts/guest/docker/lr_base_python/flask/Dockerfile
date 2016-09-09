@@ -16,6 +16,9 @@ ENV COMMIT LOCAL
 # Added this environment variable so that pytest can import the application package.
 ENV PYTHONPATH /src
 
+# DEPERECATED, HERE FOR TEMP BACK COMPAT ONLY: USE LOG_LEVEL INSTEAD
+ENV FLASK_LOG_LEVEL DEBUG
+
 WORKDIR /src
 
 # Install gunicorn and eventlet
