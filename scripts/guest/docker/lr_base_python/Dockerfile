@@ -28,5 +28,5 @@ RUN yum -q -y groupinstall "Development Tools" --skip-broken && \
   yum -q -y install wget
 
 # Install python 3 then upgrade pip to latest version. Everything needs it so it goes here
-RUN yum install -y https://raw.githubusercontent.com/LandRegistry-Ops/puppet-control/development/site/profiles/files/lr-python3-3.4.3-1.x86_64.rpm && \
+RUN yum install -q -y https://raw.githubusercontent.com/LandRegistry-Ops/puppet-control/development/site/profiles/files/lr-python3-3.4.3-1.x86_64.rpm && \
   pip3 install --upgrade pip
