@@ -12,6 +12,10 @@ def provision_db2(root_loc)
   
   docker_commands = []
   docker_commands.push("docker-compose start db2")
+  
+  # Better not run anything until DB2 is ready to accept connections...
+  docker_commands.push("echo Waiting for DB2 to finish initialising")
+  docker_commands.push("/vagrant/scripts/guest/wait-for-it.sh localhost:50000")
 
   if config["applications"]
     config["applications"].each do |appname, appconfig|
