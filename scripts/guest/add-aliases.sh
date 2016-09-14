@@ -67,7 +67,7 @@ function devenv-help(){
     remove <name of container>                       -     remove a container
     rebuild <name of container>                      -     rebuild a container and run it in the background
     bashin <name of container>                       -     bash in to a container
-    unit-test <name of container>                    -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command).
+    unit-test <name of container> [-r]               -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command).
                                                            if you add -r it will output reports to the test-output folder.
     integration-test <name of container>             -     run the integration tests for an application (this expects there to a be a Makefile with a integrationtest command)
     acceptance-test                                  -     run the acceptance tests. It expects the repo to be called acceptance-tests and there to be a run_tests.sh
