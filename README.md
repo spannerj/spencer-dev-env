@@ -178,12 +178,15 @@ start <name of container>                        -     start a container
 restart <name of container>                      -     restart a container
 logs <name of container>                         -     view the logs of a container
 exec <name of container> <command to execute>    -     execute a command in a running container
+run <options> <name of container> <command>      -     creates a new container and runs the command in it.
 remove <name of container>                       -     remove a container
 rebuild <name of container>                      -     rebuild a container and run it in the background
 bashin <name of container>                       -     bash in to a container
-unit-test <name of container>                    -     run the unit tests for an application (this expects there to a be a manage.py with a unittest command)
-integration-test <name of container>             -     run the integration tests for an application (this expects there to a be a manage.py with a integrationtest command)
+unit-test <name of container>                    -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command). If you add -r it will output reports to the test-output folder.
+integration-test <name of container>             -     run the integration tests for an application (this expects there to a be a Makefile with a integrationtest command)
+acceptance-test                                  -     run the acceptance tests. It expects the repo to be called acceptance-tests and there to be a run_tests.sh
 psql <name of database>                          -     run psql in the postgres container
+db2                                              -     run db2 command line in the db2 container
 manage <name of container> <command>             -     run manage.py commands in a container
 ```
 
