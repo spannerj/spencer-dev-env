@@ -23,5 +23,15 @@ RUN wget -q https://downloads.gradle.org/distributions/gradle-3.0-all.zip && \
 # Default directory to run the app from
 WORKDIR /src
 
+# Port for frameworks such as spark
+# Default to 8080, docker-compose can change this to the reserved port for this app
+ENV PORT 8080
+
+# Set the log level to DEBUG for development
+ENV LOG_LEVEL DEBUG
+
+# Set commit (for the health route) to be local for development
+ENV COMMIT LOCAL
+
 # Run gradle using the compiled classes (not creating a fat jar for deployment)
 CMD ["gradle", "run"]

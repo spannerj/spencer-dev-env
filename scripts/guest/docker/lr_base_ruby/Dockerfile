@@ -11,9 +11,9 @@ FROM centos:centos7.2.1511
 RUN yum clean all && \
   yum -q -y update
 
-# Install rbenv system dependencies
+# Install rbenv/phantomjs system dependencies
 RUN yum install -y gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel \
-  openssl-devel make bzip2 autoconf automake libtool bison iconv-devel git-core
+  openssl-devel make bzip2 autoconf automake libtool bison iconv-devel git-core wget fontconfig
 
 # Create the unprivileged application user and switch user
 RUN groupadd app-group; useradd -g app-group --home-dir /home/app app
@@ -38,3 +38,18 @@ RUN rbenv install 2.3.1; rbenv init -
 RUN mkdir $( dirname $(ruby -e 'print Gem::ConfigFile::SYSTEM_WIDE_CONFIG_FILE') ) && \
   echo 'gem: --no-document' >> $(ruby -e 'print Gem::ConfigFile::SYSTEM_WIDE_CONFIG_FILE') && \
   gem install bundler; rbenv rehash
+
+# Use root for this bit
+USER root
+## Install Phantomjs
+RUN export PHANTOM_JS="phantomjs-2.1.1-linux-x86_64" && \
+  wget -q https://bitbucket.org/ariya/phantomjs/downloads/$PHANTOM_JS.tar.bz2  && \
+  mv $PHANTOM_JS.tar.bz2 /usr/local/share/  && \
+  cd /usr/local/share/  && \
+  tar xvjf $PHANTOM_JS.tar.bz2  && \
+  ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/share/phantomjs  && \
+  ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin/phantomjs  && \
+  ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/bin/phantomjs
+
+# Back to app user for the actual running
+USER app

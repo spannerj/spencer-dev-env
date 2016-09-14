@@ -15,7 +15,7 @@ def provision_postgres(root_loc)
   docker_commands.push("echo Waiting for postgres to finish initialising")
   docker_commands.push("/vagrant/scripts/guest/docker/postgres/wait-for-it.sh localhost")
 
-  # Write the line we always need (for backwards compatibility with apps that don't use their own username yet)
+  # DEPRECATED: Write the line we always need (for backwards compatibility with apps that don't use their own username yet)
   File.open("#{root_loc}/.postgres_init.sql", 'w') { |file| file.write("CREATE ROLE vagrant WITH LOGIN PASSWORD 'vagrant';") }
   # First, a command to get the file into the container
   docker_commands.push("docker cp /vagrant/.postgres_init.sql postgres:/postgres_init.sql")

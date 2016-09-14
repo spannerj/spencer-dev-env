@@ -3,23 +3,50 @@ alias dc="docker-compose"
 alias stop="docker-compose stop"
 alias start="docker-compose start"
 alias restart="docker-compose restart"
-alias rebuild="docker-compose up --build -d "
-alias remove="docker-compose rm -v -f "
+alias rebuild="docker-compose up --build -d"
+alias remove="docker-compose rm -v -f"
 alias logs="docker-compose logs"
 alias exec="docker-compose exec"
 alias status="docker-compose ps"
-alias psql="docker-compose exec postgres psql -h postgres -U root -d "
+alias run="docker-compose run --rm"
+alias psql="docker-compose exec postgres psql -h postgres -U root -d"
+alias db2="docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2'"
 
 function bashin(){
     docker exec -it ${@:1} bash
 }
 
 function unit-test(){
-    docker-compose exec ${1} python3 manage.py unittest ${2}
+    reportflag=off
+    app_name=${1}
+
+    # Check if there's a -r argument (the only one supported) and set a flag if so
+    shift
+    while [ $# -gt 0 ]
+    do
+       case "$1" in
+           -r)  reportflag=on;;
+           *)
+               echo >&2 "usage: unit-test <container_name> [-r]"
+    	        return;;
+       esac
+       shift
+    done
+
+    # If the report flag is set generate report output otherwise just run the tests
+    if [ "$reportflag" = on ] ; then
+       docker-compose exec $app_name make report="true" unittest
+    else
+       docker-compose exec $app_name make unittest
+    fi
 }
 
 function integration-test(){
-    docker-compose exec ${1} python3 manage.py integrationtest
+    docker-compose exec ${1} make integrationtest
+}
+
+function acceptance-test(){
+    docker-compose run --rm acceptance-tests run_tests.sh
 }
 
 function manage(){
@@ -30,21 +57,23 @@ function devenv-help(){
   cat <<EOF
     If typing a docker-compose command you can use the alias dc instead. For example "dc ps" rather than "docker-compose ps".
 
-    status                                           -     to view the status of all running containers
-    stop <name of container>                         -     to stop a container
-    start <name of container>                        -     to start a container
-    restart <name of container>                      -     to restart a container
-    logs <name of container>                         -     to view the logs of a container
-    exec <name of container> <command to execute>    -     to execute a command in a running container
-    remove <name of container>                       -     to remove a container
-    rebuild <name of container>                      -     to rebuild a container and run it in the background
-    bashin <name of container>                       -     to bash in to a container
-    unit-test <name of container>                    -     to run the unit tests for an application (this expects there
-                                                           to a be a manage.py with a unittest command)
-    integration-test <name of container>             -     to run the integration tests for an application (this expects
-                                                           there to a be a manage.py with a integrationtest command)
-    psql <name of database>                          -     to run psql in the postgres container
-    manage <name of container> <command>             -     to run manage.py commands in a container
+    status                                           -     view the status of all running containers
+    stop <name of container>                         -     stop a container
+    start <name of container>                        -     start a container
+    restart <name of container>                      -     restart a container
+    logs <name of container>                         -     view the logs of a container
+    exec <name of container> <command to execute>    -     execute a command in a running container
+    run <options> <name of container> <command>      -     creates a new container and runs the command in it
+    remove <name of container>                       -     remove a container
+    rebuild <name of container>                      -     rebuild a container and run it in the background
+    bashin <name of container>                       -     bash in to a container
+    unit-test <name of container> [-r]               -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command).
+                                                           if you add -r it will output reports to the test-output folder.
+    integration-test <name of container>             -     run the integration tests for an application (this expects there to a be a Makefile with a integrationtest command)
+    acceptance-test                                  -     run the acceptance tests. It expects the repo to be called acceptance-tests and there to be a run_tests.sh
+    psql <name of database>                          -     run psql in the postgres container
+    db2                                              -     run db2 command line in the db2 container
+    manage <name of container> <command>             -     run manage.py commands in a container
 EOF
 }
 

@@ -9,13 +9,17 @@ def provision_db2(root_loc)
 
   # Load configuration.yml into a Hash
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
-  
+
   docker_commands = []
   docker_commands.push("docker-compose start db2")
 
+  # Better not run anything until DB2 is ready to accept connections...
+  docker_commands.push("echo Waiting for DB2 to finish initialising")
+  docker_commands.push("source /vagrant/scripts/guest/docker/db2/wait-for-db2.sh")
+
   if config["applications"]
     config["applications"].each do |appname, appconfig|
-      # To help enforce the accuracy of the app's dependency file, only search for init sql 
+      # To help enforce the accuracy of the app's dependency file, only search for init sql
       # if the app specifically specifies db2 in it's commodity list
       if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
         puts colorize_red("No configuration.yml found for %s" % [appname])
@@ -25,7 +29,7 @@ def provision_db2(root_loc)
       next if dependencies.nil?
       has_db2 = dependencies.key?("commodities") && dependencies["commodities"].include?('db2')
       next if not has_db2
-      
+
       # Load any SQL contained in the apps into the docker commands list
       if File.exists?("#{root_loc}/apps/#{appname}/fragments/db2-init-fragment.sql")
         puts colorize_pink("Found some in #{appname}")
