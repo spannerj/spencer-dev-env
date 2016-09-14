@@ -9,18 +9,7 @@ It provides several hooks for applications to take advantage of, including:
 
 # Changelog
 
-* **v0.4.2** Updated base Java Dockerfile to Grade 3, and removed compilation during build - instead uses shared folder and gradle run. Added manage and devenv-help aliases. Updated logstash config to better cope with multiple line traces. Added LOG_LEVEL into base python Dockerfile to support latest skeleton.
-* **v0.4.1** Updated Logstash config and Kibana saved searches to use new JSON log format.
-* **v0.4.0** Added ELK stack support (#2) - see the [Logging section](#logging) for instructions. Reworked base Dockerfiles for increased efficiency and support for skeleton unit test structure. More aliases added, and tab-complete enabled for all aliases.
-* **v0.3.1** Many optimisations and fixes (#16, #18)
-* **v0.3.0** Added app-specific commodity provision tracking (#1). Fixed long line character overwriting issues in windows during SSH. Added aliases for common commands (#14).
-* **v0.2.6** *BREAKING CHANGE* - Removed default CMD and SETTINGS env vars from base python/flask Dockerfiles. Apps must implement these themselves (although SETTINGS is not used in the current app structure).
-* **v0.2.5** Updates for split app/alembic DB users (#11) and increased reload reliability.
-* **v0.2.4** Fixed fatal error when doing a `vagrant reload` (#13)
-* **v0.2.3** Fixed docker errors during vagrant up when no (docker) applications are specified in the configuration (#12)
-* **v0.2.2** Updated base container centos versions, updated gradle version in java box. Fixed #10.
-* **v0.2.1** Updated base vagrant box version, fixed a few provisioning bugs
-* **v0.2** First public release
+[Here](CHANGELOG.md)
 
 # Pre-requisites
 
@@ -171,7 +160,7 @@ To import them, go to Settings/Objects/Import and browse to `saved.json` in `/sc
 
 If you hate typing long commands then the commands below have been added to the dev-env for you:
 
-```
+```bash
 status                                           -     view the status of all running containers
 stop <name of container>                         -     stop a container
 start <name of container>                        -     start a container
@@ -192,8 +181,8 @@ manage <name of container> <command>             -     run manage.py commands in
 
 If you prefer using docker or docker-compose directly then below is list of useful commands (note: if you leave out <name of container> then all containers will be affected):
 
-```
-docker-compose run --rm <name of container> <command>    -    spin up a temporary container and run a command in it         
+```bash
+docker-compose run --rm <name of container> <command>    -    spin up a temporary container and run a command in it
 docker-compose rm -v -f <name of container>              -    remove a container
 docker-compose down --rmi all -v --remove-orphans        -    stops and removes all containers, data, and images created by up. Don't use `--rmi all` if you want to keep the images.
 docker-compose up --build -d <name of container>         -    (alias: rebuild) checks if a container needs rebuilding and rebuilds/recreates/restarts it if so, otherwise does nothing. Useful if you've just changed a requirements.txt file (or any Java code)
@@ -207,6 +196,6 @@ For those who get bored typing docker-compose you can use the alias dc instead. 
 
 In order to interact with breakpoints that you add to your applications you need to run the container in the foreground and attach to the container terminal. You do that like so:
 
-```
+```bash
 docker-compose run --rm --service-ports <name of container>
 ```
