@@ -7,7 +7,8 @@
 FROM centos:centos7.2.1511
 
 # Install Java and zip file support
-RUN yum install -y -q java-1.8.0-openjdk-devel unzip wget which
+# Also install make so the makefile can be used
+RUN yum install -y -q java-1.8.0-openjdk-devel unzip wget which make
 
 ENV GRADLE_HOME /opt/gradle/latest
 ENV PATH $GRADLE_HOME/bin:$PATH
