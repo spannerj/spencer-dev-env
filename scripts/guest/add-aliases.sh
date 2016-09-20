@@ -46,7 +46,7 @@ function integration-test(){
 }
 
 function acceptance-test(){
-    docker-compose run --rm acceptance-tests run_tests.sh
+    docker-compose run --rm acceptance-tests ./run_tests.sh
 }
 
 function manage(){
