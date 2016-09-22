@@ -16,6 +16,9 @@ ENV COMMIT LOCAL
 # Added this environment variable so that pytest can import the application package.
 ENV PYTHONPATH /src
 
+# Disables sendfile in gunicorn to work around a caching bug with vagrant shared folders
+ENV SENDFILE 0
+
 # DEPERECATED, HERE FOR TEMP BACK COMPAT ONLY: USE LOG_LEVEL INSTEAD
 ENV FLASK_LOG_LEVEL DEBUG
 
