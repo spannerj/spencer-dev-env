@@ -36,9 +36,6 @@ Vagrant.configure(2) do |config|
   config.vm.box_version      = "0.5.0"
   config.vm.box_check_update = false
 
-  #forward ports for nginx
-  config.vm.network "forwarded_port", guest: 80, host: 80
-  config.vm.network "forwarded_port", guest: 443, host: 443
 
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
@@ -172,6 +169,8 @@ Vagrant.configure(2) do |config|
     provision_db2(File.dirname(__FILE__))
     # Elasticsearch
     provision_elasticsearch(File.dirname(__FILE__))
+    # Nginx
+    provision_nginx(File.dirname(__FILE__))
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
     if File.size(File.dirname(__FILE__) + '/.docker-compose-file-list') != 0
@@ -181,8 +180,6 @@ Vagrant.configure(2) do |config|
       puts colorize_yellow("No containers to start.")
     end
 
-    #setup nginx
-    provision_nginx(__FILE__)
 
     # If the dev env configuration repo contains a script, run it here
     # This should only be for temporary use during early app development - see the README for more info

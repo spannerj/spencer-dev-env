@@ -69,6 +69,11 @@ def get_port_list(root_loc)
     port_list.push("19300:9300")
   end
 
+  if is_commodity?(root_loc, "nginx")
+    port_list.push("10080:80")
+    port_list.push("10443:443")
+  end
+
   return port_list
 end
 
