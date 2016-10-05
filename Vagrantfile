@@ -66,11 +66,11 @@ Vagrant.configure(2) do |config|
 
   # Only if vagrant up/resume do we want to create dev-env configuration
   if ['up', 'resume', 'reload'].include? ARGV[0]
+    puts colorize_lightblue("This is a universal dev env (version 1.0.0)")
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_green("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
     else
-      puts colorize_lightblue("This is a universal dev env (version 1.0.0)")
       print colorize_yellow("Please enter the url of your dev env repo (SSH): ")
       app_grouping = STDIN.gets.chomp
       File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
