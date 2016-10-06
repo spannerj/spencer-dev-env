@@ -118,13 +118,22 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Retrieving custom configuration repo files:")
     if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
       command_successful = system 'git', '-C', File.dirname(__FILE__) + '/dev-env-project', 'pull'
+      new_project = false
     else
       command_successful = system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), File.dirname(__FILE__) + '/dev-env-project'
+      new_project = true
     end
 
     # Error if git clone or pulling failed
     if command_successful == false
-      puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project")
+      puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project. Check your URL?")
+      # If we were cloning from a new URL, it is possible the URL was wrong - reset everything so they're asked again next time
+      if new_project == true
+        File.delete(DEV_ENV_CONTEXT_FILE)
+        if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
+          FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
+        end
+      end
       exit 1
     end
 
