@@ -35,10 +35,11 @@ def get_port_list(root_loc)
           compose_file["services"].each do |composeappname, composeappconfig|
             # If the compose file has a port section
             if composeappconfig.key?("ports")
-              # Currently assumes there is only one port to forward and that the
-              # first port in the string "port_number1:port_number2" is the host port
-              app_host_port = composeappconfig["ports"][0].split(":")[0]
-              port_list.push("#{app_host_port}:#{app_host_port}")
+              # Expose each port in the list
+              composeappconfig["ports"].each do |port|
+                app_host_port = port.split(":")[0]
+                port_list.push("#{app_host_port}:#{app_host_port}")
+              end
             end
           end
         end
