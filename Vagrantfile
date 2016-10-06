@@ -13,6 +13,10 @@ require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
 require 'fileutils'
+require "rubygems"
+require "json"
+require "net/http"
+require "uri"
 
 # If plugins have been installed, rerun the original vagrant command and abandon this one
 if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
@@ -24,6 +28,41 @@ end
 if ['reload'].include? ARGV[0] 
   puts colorize_lightblue('Stopping apps')
   system "vagrant ssh -c \"docker-compose stop\""
+end
+
+# Only if vagrant up/resume do we want to check for update
+if ['up', 'resume', 'reload'].include? ARGV[0]
+  this_version = "1.1.0"
+  puts colorize_lightblue("This is a universal dev env (version #{this_version})")
+  # Check for new version (using a snippet)
+  versioncheck_uri = URI.parse("http://192.168.249.38/common/dev-env/snippets/12/raw")
+  http = Net::HTTP.new(versioncheck_uri.host, versioncheck_uri.port)
+  request = Net::HTTP::Get.new(versioncheck_uri.request_uri)
+  begin
+    response = http.request(request)
+    if response.code == "200"
+      result = JSON.parse(response.body)
+      latest_version = result["version"]
+      if Gem::Version.new(latest_version) > Gem::Version.new(this_version)
+        puts colorize_yellow("A new version is available - v#{latest_version}")
+        puts colorize_yellow("Changes:")
+        result["changes"].each { |change| puts colorize_yellow("  " + change) }
+        puts colorize_yellow("Updating in 5 seconds...")
+        if not system 'git', '-C', File.dirname(__FILE__), 'pull'
+          puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
+        else
+          exec "vagrant #{ARGV.join(' ')}"
+        end
+      else
+        puts colorize_green("This is the latest version.")
+      end
+    else
+      puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+    end
+  rescue StandardError => e
+    puts e
+    puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+  end
 end
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
@@ -66,7 +105,6 @@ Vagrant.configure(2) do |config|
 
   # Only if vagrant up/resume do we want to create dev-env configuration
   if ['up', 'resume', 'reload'].include? ARGV[0]
-    puts colorize_lightblue("This is a universal dev env (version 1.0.0)")
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_green("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
@@ -111,7 +149,7 @@ Vagrant.configure(2) do |config|
     # remove DEV_ENV_CONTEXT_FILE created on provisioning
     confirm = nil
     until ["Y", "y", "N", "n"].include?(confirm)
-      confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (Y/N) ")
+      confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (y/n) ")
     end
     if confirm.upcase == "N"
       File.delete(DEV_ENV_CONTEXT_FILE)
