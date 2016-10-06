@@ -32,7 +32,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.1.0"
+  this_version = "1.0.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Check for new version (using a snippet)
   versioncheck_uri = URI.parse("http://192.168.249.38/common/dev-env/snippets/12/raw")
@@ -47,7 +47,8 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
         puts colorize_yellow("A new version is available - v#{latest_version}")
         puts colorize_yellow("Changes:")
         result["changes"].each { |change| puts colorize_yellow("  " + change) }
-        puts colorize_yellow("Updating in 5 seconds...")
+        puts colorize_yellow("Updating in 10 seconds...")
+        sleep(10)
         if not system 'git', '-C', File.dirname(__FILE__), 'pull'
           puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
         else
