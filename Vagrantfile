@@ -32,7 +32,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.0.0"
+  this_version = "1.1.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Check for new version (using a snippet)
   versioncheck_uri = URI.parse("http://192.168.249.38/common/dev-env/snippets/12/raw")

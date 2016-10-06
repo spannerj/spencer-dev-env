@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.0
+
+* All the base images now rebuild on every vagrant up (#25). The current base images have been tagged as version 1, which apps can now reference to lock themselves in.
+* Auto update functionality has been added.
+* The base Flask dockerfile has a new env var set in order to disable sendfile support in gunicorn.
+* Gradle in the base Java dockerfile has been upgraded from 3.0 to 3.1.
+* If multiple ports are specified in a docker-compose-fragment, they will all be forwarded outside of vagrant. Previously only the first one was.
+* Minor bug fixes (#27 and #28).
+
 ## v1.0.0
 
 * Added db2 and psql aliases.
