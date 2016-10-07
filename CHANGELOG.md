@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1
+
+* Added nginx as a supported commodity. See the README for usage instructions.
+
 ## v1.1.0
 
 * All the base images now rebuild on every vagrant up (#25). The current base images have been tagged as version 1, which apps can now reference to lock themselves in.
