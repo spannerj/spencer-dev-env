@@ -225,9 +225,9 @@ Vagrant.configure(2) do |config|
     # Run app DB2 SQL statements
     provision_db2(root_loc)
     # Elasticsearch
-    provision_elasticsearch(File.dirname(__FILE__))
+    provision_elasticsearch(root_loc)
     # Nginx
-    provision_nginx(File.dirname(__FILE__))
+    provision_nginx(root_loc)
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
     if File.size(root_loc + '/.docker-compose-file-list') != 0
