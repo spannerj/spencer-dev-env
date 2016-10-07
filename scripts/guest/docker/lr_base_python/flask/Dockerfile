@@ -4,7 +4,7 @@
 ######################################################################
 
 # Set the base image
-FROM lr_base_python
+FROM lr_base_python:1
 
 # Port for gunicorn
 # Default to 8080, docker-compose can change this to the reserved port for this app
@@ -16,7 +16,11 @@ ENV COMMIT LOCAL
 # Added this environment variable so that pytest can import the application package.
 ENV PYTHONPATH /src
 
-# DEPERECATED, HERE FOR TEMP BACK COMPAT ONLY: USE LOG_LEVEL INSTEAD
+# Disables sendfile in gunicorn to work around a caching bug with vagrant shared folders
+ENV SENDFILE 0
+
+# DEPERECATED: APPS SHOULD USE LOG_LEVEL INSTEAD
+# WILL BE REMOVED IN VERSION 2
 ENV FLASK_LOG_LEVEL DEBUG
 
 WORKDIR /src
