@@ -146,6 +146,14 @@ This file is a shell script that contains curl commands to do any setup the app 
 
 [Example](http://192.168.249.38/common/dev-env/snippets/5)
 
+#### `/fragments/nginx-fragment.conf` (nginx)
+
+This file forms part of an nginx configration file. It will be included within the server directive of the main configuration file.
+
+Important - if your app is adding itself as a proxied location{} behind nginx, nginx must start AFTER your app, otherwise it will error with a host not found. So your app's docker-compose-fragment.yml must actually specify nginx as a service and set the depends_on variable with your app's name. Compose will automatically merge this with the dev-env's nginx fragment. See the end of the [example fragment](http://192.168.249.38/common/dev-env/snippets/8) for the exact code.
+
+[Example](http://192.168.249.38/common/dev-env/snippets/11)
+
 ## Logging
 
 An ELK stack is created if any application requests the "logging" commodity. It will capture the output of any containers that are configured (via their docker-compose-fragment) to forward their messages to logstash via syslog.
