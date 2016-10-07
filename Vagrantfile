@@ -8,6 +8,7 @@ require_relative 'scripts/host/utilities'
 require_relative 'scripts/host/docker_compose'
 require_relative 'scripts/host/expose_ports'
 require_relative 'scripts/host/postgres_provision'
+require_relative 'scripts/host/nginx_provision'
 require_relative 'scripts/host/alembic_provision'
 require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
@@ -28,7 +29,7 @@ end
 
 # If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
 # So stop the apps now, just so they don't try to reload and run any new code.
-if ['reload'].include? ARGV[0] 
+if ['reload'].include? ARGV[0]
   puts colorize_lightblue('Stopping apps')
   system "vagrant ssh -c \"docker-compose stop\""
 end
@@ -83,6 +84,7 @@ Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
   config.vm.box_version      = "0.5.0"
   config.vm.box_check_update = false
+
 
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
@@ -224,6 +226,8 @@ Vagrant.configure(2) do |config|
     provision_db2(root_loc)
     # Elasticsearch
     provision_elasticsearch(root_loc)
+    # Nginx
+    provision_nginx(root_loc)
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
     if File.size(root_loc + '/.docker-compose-file-list') != 0
@@ -232,6 +236,7 @@ Vagrant.configure(2) do |config|
     else
       puts colorize_yellow("No containers to start.")
     end
+
 
     # If the dev env configuration repo contains a script, run it here
     # This should only be for temporary use during early app development - see the README for more info
