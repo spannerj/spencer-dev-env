@@ -146,6 +146,12 @@ This file is a shell script that contains curl commands to do any setup the app 
 
 [Example](http://192.168.249.38/common/dev-env/snippets/5)
 
+#### `/fragments/nginx-fragment.conf` (nginx)
+
+This file forms part of an nginx configration file. It will be included within the server directive of the main configuration file.
+
+[Example](http://192.168.249.38/common/dev-env/snippets/11)
+
 ## Logging
 
 An ELK stack is created if any application requests the "logging" commodity. It will capture the output of any containers that are configured (via their docker-compose-fragment) to forward their messages to logstash via syslog.
