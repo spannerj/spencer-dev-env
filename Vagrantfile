@@ -18,6 +18,9 @@ require "json"
 require "net/http"
 require "uri"
 
+# Where is this file located?
+root_loc = File.dirname(__FILE__)
+
 # If plugins have been installed, rerun the original vagrant command and abandon this one
 if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
   exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
@@ -34,41 +37,47 @@ end
 if ['up', 'resume', 'reload'].include? ARGV[0]
   this_version = "1.1.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
-  # Check for new version (using a snippet)
-  versioncheck_uri = URI.parse("http://192.168.249.38/common/dev-env/snippets/12/raw")
-  http = Net::HTTP.new(versioncheck_uri.host, versioncheck_uri.port)
-  request = Net::HTTP::Get.new(versioncheck_uri.request_uri)
-  begin
-    response = http.request(request)
-    if response.code == "200"
-      result = JSON.parse(response.body)
-      latest_version = result["version"]
-      if Gem::Version.new(latest_version) > Gem::Version.new(this_version)
-        puts colorize_yellow("A new version is available - v#{latest_version}")
-        puts colorize_yellow("Changes:")
-        result["changes"].each { |change| puts colorize_yellow("  " + change) }
-        puts colorize_yellow("Updating in 10 seconds...")
-        sleep(10)
-        if not system 'git', '-C', File.dirname(__FILE__), 'pull'
-          puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
+  # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
+  current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
+  if current_branch == "master"
+    # Check for new version (using a snippet)
+    versioncheck_uri = URI.parse("http://192.168.249.38/common/dev-env/snippets/12/raw")
+    http = Net::HTTP.new(versioncheck_uri.host, versioncheck_uri.port)
+    request = Net::HTTP::Get.new(versioncheck_uri.request_uri)
+    begin
+      response = http.request(request)
+      if response.code == "200"
+        result = JSON.parse(response.body)
+        latest_version = result["version"]
+        if Gem::Version.new(latest_version) > Gem::Version.new(this_version)
+          puts colorize_yellow("A new version is available - v#{latest_version}")
+          puts colorize_yellow("Changes:")
+          result["changes"].each { |change| puts colorize_yellow("  " + change) }
+          puts colorize_yellow("Updating in 10 seconds...")
+          sleep(10)
+          if not system 'git', '-C', root_loc, 'pull'
+            puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
+          else
+            exec "vagrant #{ARGV.join(' ')}"
+          end
         else
-          exec "vagrant #{ARGV.join(' ')}"
+          puts colorize_green("This is the latest version.")
         end
       else
-        puts colorize_green("This is the latest version.")
+        puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
       end
-    else
+    rescue StandardError => e
+      puts e
       puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
     end
-  rescue StandardError => e
-    puts e
-    puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+  else
+    puts colorize_yellow("Skipping update check as branch is not master")
   end
 end
 
 # Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
 # As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
-DEV_ENV_CONTEXT_FILE = File.dirname(__FILE__) + "/.dev-env-context"
+DEV_ENV_CONTEXT_FILE = root_loc + "/.dev-env-context"
 
 Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
@@ -99,8 +108,8 @@ Vagrant.configure(2) do |config|
 
   # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
   if !(['provision', '--provision'] & ARGV).empty?
-    if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
-      File.delete(File.dirname(__FILE__) + '/.commodities.yml')
+    if File.exists?(root_loc + '/.commodities.yml')
+      File.delete(root_loc + '/.commodities.yml')
     end
   end
 
@@ -117,11 +126,11 @@ Vagrant.configure(2) do |config|
 
     # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
     puts colorize_lightblue("Retrieving custom configuration repo files:")
-    if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
-      command_successful = system 'git', '-C', File.dirname(__FILE__) + '/dev-env-project', 'pull'
+    if Dir.exists?(root_loc + '/dev-env-project')
+      command_successful = system 'git', '-C', root_loc + '/dev-env-project', 'pull'
       new_project = false
     else
-      command_successful = system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), File.dirname(__FILE__) + '/dev-env-project'
+      command_successful = system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), root_loc + '/dev-env-project'
       new_project = true
     end
 
@@ -131,8 +140,8 @@ Vagrant.configure(2) do |config|
       # If we were cloning from a new URL, it is possible the URL was wrong - reset everything so they're asked again next time
       if new_project == true
         File.delete(DEV_ENV_CONTEXT_FILE)
-        if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
-          FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
+        if Dir.exists?(root_loc + '/dev-env-project')
+          FileUtils.rm_r root_loc + '/dev-env-project'
         end
       end
       exit 1
@@ -140,18 +149,18 @@ Vagrant.configure(2) do |config|
 
     # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
-    update_apps(File.dirname(__FILE__))
+    update_apps(root_loc)
 
     # Create a file called .commodities.yml with the list of commodities in it
     puts colorize_lightblue("Creating list of commodities")
-    create_commodities_list(File.dirname(__FILE__))
+    create_commodities_list(root_loc)
 
     # Call the ruby function to create the docker compose file containing the apps and their commodities
     puts colorize_lightblue("Creating docker-compose")
-    prepare_compose(File.dirname(__FILE__))
+    prepare_compose(root_loc)
 
     # Find the ports of the apps and commodities on the host and add port forwards for them
-    create_port_forwards(File.dirname(__FILE__), config)
+    create_port_forwards(root_loc, config)
   end
 
   # In the event of user requesting a vagrant destroy
@@ -163,13 +172,13 @@ Vagrant.configure(2) do |config|
     end
     if confirm.upcase == "N"
       File.delete(DEV_ENV_CONTEXT_FILE)
-      if Dir.exists?(File.dirname(__FILE__) + '/dev-env-project')
-        FileUtils.rm_r File.dirname(__FILE__) + '/dev-env-project'
+      if Dir.exists?(root_loc + '/dev-env-project')
+        FileUtils.rm_r root_loc + '/dev-env-project'
       end
     end
     # remove .commodities.yml created on provisioning
-    if File.exists?(File.dirname(__FILE__) + '/.commodities.yml')
-      File.delete(File.dirname(__FILE__) + '/.commodities.yml')
+    if File.exists?(root_loc + '/.commodities.yml')
+      File.delete(root_loc + '/.commodities.yml')
     end
   end
 
@@ -184,7 +193,7 @@ Vagrant.configure(2) do |config|
 
   # If the dev env configuration repo contains a script, provision it here
   # This should only be for temporary use during early app development - see the README for more info
-  if File.exists?(File.dirname(__FILE__) + '/dev-env-project/environment.sh')
+  if File.exists?(root_loc + '/dev-env-project/environment.sh')
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
   end
 
@@ -208,16 +217,16 @@ Vagrant.configure(2) do |config|
     # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group),
     # you'll need to delete the postgres container and it's volume else you'll get errors.
     # Do a full vagrant provision, or just ssh in and do docker rm -v -f postgres
-    provision_postgres(File.dirname(__FILE__))
+    provision_postgres(root_loc)
     # Alembic
-    provision_alembic(File.dirname(__FILE__))
+    provision_alembic(root_loc)
     # Run app DB2 SQL statements
-    provision_db2(File.dirname(__FILE__))
+    provision_db2(root_loc)
     # Elasticsearch
-    provision_elasticsearch(File.dirname(__FILE__))
+    provision_elasticsearch(root_loc)
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
-    if File.size(File.dirname(__FILE__) + '/.docker-compose-file-list') != 0
+    if File.size(root_loc + '/.docker-compose-file-list') != 0
       puts colorize_lightblue("Starting containers")
       system "vagrant ssh -c \"docker-compose up --no-build -d \""
     else
@@ -226,7 +235,7 @@ Vagrant.configure(2) do |config|
 
     # If the dev env configuration repo contains a script, run it here
     # This should only be for temporary use during early app development - see the README for more info
-    if File.exists?(File.dirname(__FILE__) + '/dev-env-project/after-up.sh')
+    if File.exists?(root_loc + '/dev-env-project/after-up.sh')
       system "vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\""
     end
 
