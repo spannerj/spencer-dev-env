@@ -1,5 +1,6 @@
 FROM postgres:9.4
 
+# Install the PostGIS extension
 RUN apt-get update && \
 	apt-get install -y postgresql-9.4-postgis-2.2 && \
 	apt-get clean && \
