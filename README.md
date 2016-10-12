@@ -130,6 +130,10 @@ This file contains any SQL to run in postgres during the initial setup - at the 
 
 [Example](http://192.168.249.38/common/dev-env/snippets/4)
 
+If you want to spatially enable your database see the following example:
+
+[Example - Spatial](http://192.168.249.38/common/dev-env/snippets/13)
+
 #### `/manage.py` (postgres)
 
 This is a standard Alembic management file - if it exists, then a database migration will be run on every `vagrant up`.
