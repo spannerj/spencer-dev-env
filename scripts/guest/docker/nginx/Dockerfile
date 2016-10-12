@@ -7,3 +7,7 @@ RUN rm /etc/nginx/conf.d/default.conf && \
 
 # The base server config, which sets up the SSL etc.
 COPY server.conf /etc/nginx/conf.d/server.conf
+
+# To ensure our changes and config fragments we copy in are actually persisted in between container recreates.
+# This has to go at the end as the data is frozen once the volume is declared
+VOLUME /etc/nginx

@@ -3,6 +3,7 @@
 ## v1.1.2
 
 * Added PostGIS extension to Postgres. See the README for usage instructions.
+* Fixed nginx forgetting all custom config on container recreation
 
 ## v1.1.1
 
