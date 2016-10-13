@@ -28,7 +28,11 @@ if ! [ -z "$COMPOSE_FILE" ]; then
   rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 
   # Workaround because docker-compose create doesn't create network (only up does) and it's needed to create the containers
-  docker network create dv_default
+  if docker network ls | grep -q "dv_default"; then
+    echo "Docker network already exists, skipping creation"
+  else
+    docker network create dv_default
+  fi
 
   echo "- - - (Re)creating docker containers - - -"
   /usr/local/bin/docker-compose create --no-build
