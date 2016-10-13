@@ -36,7 +36,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.1.2"
+  this_version = "1.1.3"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip

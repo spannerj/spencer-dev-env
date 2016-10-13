@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.3
+
+* Added ADFS public cert (for validating JWTs provided during authentication)
+* Minor cosmetic improvements
+
 ## v1.1.2
 
 * Added PostGIS extension to Postgres. See the README for usage instructions.
