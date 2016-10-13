@@ -13,7 +13,7 @@ def create_commodities_list(root_loc)
   if config["applications"]
     config["applications"].each do |appname, appconfig|
       # Load any commodities into the list
-if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
+      if !File.exist?("#{root_loc}/apps/#{appname}/configuration.yml")
         puts colorize_red("No configuration.yml found for %s" % [appname])
         next
       end
