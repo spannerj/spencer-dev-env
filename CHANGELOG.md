@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.4
+
+* Added TEMPLATES_AUTO_RELOAD environment variable to base Flask Dockerfile. Can be read into a variable of the same name in config.py to disable flask caching of jinja html templates during development.
+
 ## v1.1.3
 
 * Added ADFS public cert (for validating JWTs provided during authentication)

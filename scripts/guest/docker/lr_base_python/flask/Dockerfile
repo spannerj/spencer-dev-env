@@ -23,6 +23,9 @@ ENV SENDFILE 0
 # WILL BE REMOVED IN VERSION 2
 ENV FLASK_LOG_LEVEL DEBUG
 
+# If imported into your config, Flask will not cache jinja html template files
+ENV TEMPLATES_AUTO_RELOAD true
+
 WORKDIR /src
 
 # Install gunicorn and eventlet
