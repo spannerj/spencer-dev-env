@@ -23,7 +23,8 @@ ENV SENDFILE 0
 # WILL BE REMOVED IN VERSION 2
 ENV FLASK_LOG_LEVEL DEBUG
 
-# If imported into your config, Flask will not cache jinja html template files
+# If imported into your config, Flask will not cache jinja html template files.
+# Best set to false in non-development regions though.
 ENV TEMPLATES_AUTO_RELOAD true
 
 WORKDIR /src
