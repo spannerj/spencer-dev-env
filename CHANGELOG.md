@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.5
+
+* Only check plugins on up, not reload. Should fix intermittent error.
+* Added alias for alembic db commands, ensuring the right environment variables are set for you (assuming skeleton compliance). Example usage: alembic container-name migrate
+
 ## v1.1.4
 
 * Added TEMPLATES_AUTO_RELOAD environment variable to base Flask Dockerfile. Can be read into a variable of the same name in config.py to disable flask caching of jinja html templates during development.

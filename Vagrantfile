@@ -22,9 +22,12 @@ require "uri"
 # Where is this file located?
 root_loc = File.dirname(__FILE__)
 
-# If plugins have been installed, rerun the original vagrant command and abandon this one
-if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
-  exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
+# Only if vagrant up do we want to check for plugins. Since it's only a one off really.
+if ['up'].include? ARGV[0]
+  # If plugins have been installed, rerun the original vagrant command and abandon this one
+  if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
+    exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
+  end
 end
 
 # If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
@@ -36,7 +39,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.1.4"
+  this_version = "1.1.5"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip

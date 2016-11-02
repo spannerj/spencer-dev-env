@@ -53,6 +53,10 @@ function manage(){
     docker-compose exec ${1} python3 manage.py ${@:2}
 }
 
+function alembic(){
+    docker-compose exec ${1} bash -c 'cd /src && export SQL_USE_ALEMBIC_USER=yes && export SQL_PASSWORD=superroot && python3 manage.py db '"${@:2}"''
+}
+
 function devenv-help(){
   cat <<EOF
     If typing a docker-compose command you can use the alias dc instead. For example "dc ps" rather than "docker-compose ps".
@@ -74,6 +78,7 @@ function devenv-help(){
     psql <name of database>                          -     run psql in the postgres container
     db2                                              -     run db2 command line in the db2 container
     manage <name of container> <command>             -     run manage.py commands in a container
+    alembic <name of container> <command>            -     run an alembic db command in a container, with the appropriate environment variables preset
 EOF
 }
 
