@@ -189,6 +189,7 @@ acceptance-test                                  -     run the acceptance tests.
 psql <name of database>                          -     run psql in the postgres container
 db2                                              -     run db2 command line in the db2 container
 manage <name of container> <command>             -     run manage.py commands in a container
+alembic <name of container> <command>            -     run an alembic db command in a container, with the appropriate environment variables preset
 ```
 
 If you prefer using docker or docker-compose directly then below is list of useful commands (note: if you leave out <name of container> then all containers will be affected):
