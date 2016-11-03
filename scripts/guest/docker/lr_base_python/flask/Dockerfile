@@ -30,7 +30,7 @@ ENV TEMPLATES_AUTO_RELOAD true
 WORKDIR /src
 
 # Install gunicorn and eventlet
-RUN pip3 -q install gunicorn eventlet
+RUN pip3 -q install gunicorn==19.6.0 eventlet==0.19.0
 
 # The command to run the app.
 #   Eventlet is used as the (asynch) worker.
