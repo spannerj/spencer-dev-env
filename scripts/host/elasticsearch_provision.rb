@@ -41,7 +41,7 @@ def provision_elasticsearch(root_loc)
           set_commodity_provision_status(root_loc, "#{appname}", "elasticsearch", true)
         end
       else
-        puts colorize_yellow("#{appname} says it uses Elasticsearch but doesn't contain an init SQL file. Oh well, onwards we go!")
+        puts colorize_yellow("#{appname} says it uses Elasticsearch but doesn't contain an init script. Oh well, onwards we go!")
       end
     end
   end
