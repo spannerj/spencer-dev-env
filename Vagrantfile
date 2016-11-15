@@ -32,7 +32,7 @@ end
 
 # If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
 # So stop the apps now, just so they don't try to reload and run any new code.
-if ['reload'].include? ARGV[0]
+if ['reload', 'halt'].include? ARGV[0]
   puts colorize_lightblue('Stopping apps')
   system "vagrant ssh -c \"docker-compose stop\""
 end
