@@ -49,6 +49,8 @@ def get_port_list(root_loc)
 
   if is_commodity?(root_loc, "logging")
     port_list.push("15601:5601")
+    # port_list.push("19201:9201")
+    # port_list.push("19301:9301")
   end
 
   if is_commodity?(root_loc, "postgres")

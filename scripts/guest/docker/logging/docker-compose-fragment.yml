@@ -2,14 +2,19 @@ version: '2'
 services:
   elasticsearch-logs:
     container_name: elasticsearch-logs
-    image: elasticsearch:2.3
+    image: elasticsearch:5.0.0
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9201:9200"
+      - "9301:9300"
   
   logstash:
     container_name: logstash
-    image: logstash:2.3
-    command: logstash -f /config-dir/logstash.conf
+    build: /vagrant/scripts/guest/docker/logging/logstash
     volumes:
-     - /vagrant/scripts/guest/docker/logging:/config-dir
+     - /vagrant/scripts/guest/docker/logging/logstash:/config-dir
+     #- /vagrant/scripts/guest/docker/logging/logstash:/var/log/logstash
     depends_on:
       - elasticsearch-logs
     ports:
@@ -17,7 +22,7 @@ services:
     
   kibana:
     container_name: kibana
-    image: kibana:4.5
+    image: kibana:5.0.0
     ports:
       - "5601:5601"
     depends_on:
