@@ -2,6 +2,7 @@
 
 ## v1.2.0
 
+* Updated Ruby/gems/bundler versions in base ruby dockerfile
 * Test fix for guest clock getting out of sync when host sleeps
 * Fix occasional HDD error on halt
 * Pinned gunicorn and eventlet versions in base flask dockerfile
