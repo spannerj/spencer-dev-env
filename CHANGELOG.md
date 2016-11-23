@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.0
+
+* Updated Ruby/gems/bundler versions in base ruby dockerfile
+* Test fix for guest clock getting out of sync when host sleeps
+* Fix occasional HDD error on halt
+* Pinned gunicorn and eventlet versions in base flask dockerfile
+* Updated Gradle to v3.2 in base java dockerfile
+* Updated ELK stack to v5.0
+
 ## v1.1.5
 
 * Only check plugins on up, not reload. Should fix intermittent error.

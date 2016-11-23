@@ -13,6 +13,12 @@
       "timeRestore": true,
       "timeTo": "now/d",
       "timeFrom": "now/d",
+      "refreshInterval": {
+        "display": "5 seconds",
+        "pause": false,
+        "section": 1,
+        "value": 5000
+      },
       "kibanaSavedObjectMeta": {
         "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}}}]}"
       }
@@ -43,30 +49,6 @@
     }
   },
   {
-    "_id": "Manually-logged",
-    "_type": "search",
-    "_source": {
-      "title": "Manually logged",
-      "description": "",
-      "hits": 0,
-      "columns": [
-        "containername",
-        "level",
-        "message",
-        "exception",
-        "traceid"
-      ],
-      "sort": [
-        "@timestamp",
-        "desc"
-      ],
-      "version": 1,
-      "kibanaSavedObjectMeta": {
-        "searchSourceJSON": "{\"index\":\"logstash-*\",\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647},\"query\":{\"query_string\":{\"query\":\"_exists_:level\",\"analyze_wildcard\":true}}}"
-      }
-    }
-  },
-  {
     "_id": "Automatically-logged",
     "_type": "search",
     "_source": {
@@ -87,6 +69,30 @@
       "version": 1,
       "kibanaSavedObjectMeta": {
         "searchSourceJSON": "{\"index\":\"logstash-*\",\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647},\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"_missing_:level\"}}}"
+      }
+    }
+  },
+  {
+    "_id": "Manually-logged",
+    "_type": "search",
+    "_source": {
+      "title": "Manually logged",
+      "description": "",
+      "hits": 0,
+      "columns": [
+        "containername",
+        "level",
+        "message",
+        "exception",
+        "traceid"
+      ],
+      "sort": [
+        "@timestamp",
+        "desc"
+      ],
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"logstash-*\",\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647},\"query\":{\"query_string\":{\"query\":\"_exists_:level\",\"analyze_wildcard\":true}}}"
       }
     }
   }

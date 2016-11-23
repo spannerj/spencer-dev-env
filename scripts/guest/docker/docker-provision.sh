@@ -46,3 +46,6 @@ images=$(docker images -f "dangling=true" -q)
 if [ -n "$images" ]; then
   docker rmi -f $images
 fi
+
+# Needed for Elasticsearch 5.0 docker to run
+sysctl -w vm.max_map_count=262144 > /dev/null 2>&1

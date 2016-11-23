@@ -9,3 +9,4 @@ docker_storage.vdi
 .db2_init.sql
 .commodities.yml
 mpapis.asc
+logstash*.log

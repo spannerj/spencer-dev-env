@@ -32,14 +32,14 @@ end
 
 # If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
 # So stop the apps now, just so they don't try to reload and run any new code.
-if ['reload'].include? ARGV[0]
+if ['reload', 'halt'].include? ARGV[0]
   puts colorize_lightblue('Stopping apps')
   system "vagrant ssh -c \"docker-compose stop\""
 end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.1.5"
+  this_version = "1.2.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
@@ -260,5 +260,9 @@ Vagrant.configure(2) do |config|
     vb.customize ['modifyvm', :id, '--paravirtprovider', 'kvm']
     vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
     vb.customize ["modifyvm", :id, "--chipset", "ich9"]
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-interval", 10000]
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-min-adjust", 100]
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-on-restore", 1]
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 1000]
   end
 end

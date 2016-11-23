@@ -12,14 +12,14 @@ RUN yum install -y -q java-1.8.0-openjdk-devel unzip wget which make
 
 ENV GRADLE_HOME /opt/gradle/latest
 ENV PATH $GRADLE_HOME/bin:$PATH
-ENV GRADLE_INSTALLED_VERSION '3.1'
+ENV GRADLE_INSTALLED_VERSION '3.2'
 
 # Install gradle
 
-RUN wget -q https://downloads.gradle.org/distributions/gradle-3.1-all.zip && \
-  unzip -oqd /opt/gradle gradle-3.1-all.zip && \
-  ln -sfn gradle-3.1 /opt/gradle/latest && \
-  rm -f gradle-3.1-all.zip
+RUN wget -q https://downloads.gradle.org/distributions/gradle-3.2-all.zip && \
+  unzip -oqd /opt/gradle gradle-3.2-all.zip && \
+  ln -sfn gradle-3.2 /opt/gradle/latest && \
+  rm -f gradle-3.2-all.zip
 
 # Default directory to run the app from
 WORKDIR /src
