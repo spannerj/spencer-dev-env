@@ -1,5 +1,9 @@
 # Changelog
 
+## v.next
+
+* Changed `acceptance-tests` alias to take in a parameter specifying the container name. All other parameters are passed through to the run_tests.sh script. This is so the skeleton version of that script can in turn pass them on to cucumber. Also added an identical, shorter `acctest` alias.
+
 ## v1.2.0
 
 * Updated Ruby/gems/bundler versions in base ruby dockerfile
