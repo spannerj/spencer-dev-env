@@ -10,7 +10,7 @@ alias exec="docker-compose exec"
 alias status="docker-compose ps"
 alias run="docker-compose run --rm"
 alias psql="docker-compose exec postgres psql -h postgres -U root -d"
-alias db2="docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2'"
+alias db2="docker-compose exec --user db2inst1 db2 bash -c '~/sqllib/bin/db2'"
 
 function bashin(){
     docker exec -it ${@:1} bash
