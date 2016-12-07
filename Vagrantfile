@@ -75,7 +75,23 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
       puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
     end
   else
-    puts colorize_yellow("Skipping update check as branch is not master")
+    puts colorize_yellow("*******************************************************")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**                     WARNING!                      **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**         YOU ARE NOT ON THE MASTER BRANCH          **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**             AUTO-UPDATE IS DISABLED               **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**          THERE MAY BE UNSTABLE FEATURES           **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**   IF YOU DON'T KNOW WHY YOU ARE ON THIS BRANCH    **")
+    puts colorize_yellow("**          THEN YOU PROBABLY SHOULDN'T BE!          **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("*******************************************************")
+    puts ""
+    puts colorize_yellow("Continuing in 10 seconds (CTRL+C to quit)...")
+    sleep(10)
   end
 end
 
