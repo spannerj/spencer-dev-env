@@ -1,7 +1,11 @@
 # Changelog
 
-## v.next
+## v1.2.1
 
+* Pin version of vagrant-persistent-storage plugin to fix IDE controller bug
+* Fixed db2 alias
+* Increased visibility of not-master-branch warning
+* Base java dockerfile updated to Gradle 3.2.1
 * Changed `acceptance-tests` alias to take in a parameter specifying the container name. All other parameters are passed through to the run_tests.sh script. This is so the skeleton version of that script can in turn pass them on to cucumber. Also added an identical, shorter `acctest` alias.
 
 ## v1.2.0
