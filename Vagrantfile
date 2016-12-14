@@ -26,7 +26,8 @@ root_loc = File.dirname(__FILE__)
 if ['up'].include? ARGV[0]
   # If plugins have been installed, rerun the original vagrant command and abandon this one
   if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
-    exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
+    puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
+    exit 0
   end
 end
 
