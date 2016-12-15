@@ -1,9 +1,13 @@
 echo "- - - Building base docker python images - - -"
 # If these haven't changed, the cache should be used and no app images will rebuild. Hopefully.
 # We need a latest tag for the apps that don't specify a version (yet) as well
-docker build -t lr_base_python:latest -t lr_base_python:1 /vagrant/scripts/guest/docker/lr_base_python
-docker build -t lr_base_python_flask:latest -t lr_base_python_flask:1 /vagrant/scripts/guest/docker/lr_base_python/flask
+docker build -t lr_base_python:1 /vagrant/scripts/guest/docker/lr_base_python
+docker build -t lr_base_python_flask:1 /vagrant/scripts/guest/docker/lr_base_python/flask
+docker build -t lr_base_python:latest -t lr_base_python:2 /vagrant/scripts/guest/docker/lr_base_python2
+docker build -t lr_base_python_flask:latest -t lr_base_python_flask:2 /vagrant/scripts/guest/docker/lr_base_python2/flask2
+
 docker build -t lr_base_java:latest -t lr_base_java:1 /vagrant/scripts/guest/docker/lr_base_java
+
 docker build -t lr_base_ruby:latest -t lr_base_ruby:1 /vagrant/scripts/guest/docker/lr_base_ruby
 
 # Got to use a constant project name to ensure that containers are properly tracked regardless of how fragments are added are removed. Otherwise you get duplicate errors on the build
