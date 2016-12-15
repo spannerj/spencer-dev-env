@@ -65,6 +65,7 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
           else
             puts colorize_yellow("Update successful.")
             puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
+            exit 0
           end
         else
           puts colorize_green("This is the latest version.")
