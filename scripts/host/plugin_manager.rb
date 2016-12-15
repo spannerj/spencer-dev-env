@@ -42,7 +42,12 @@ def check_plugins(plugins)
 		plugins.each_with_index do |plugin, index|
 			if not installed_plugins.include? plugin
 				puts "\033[33m" << " - Missing '#{plugin}'!" << "\e[0m"
-				if not system "vagrant plugin install #{plugin}"
+				if plugin == "vagrant-persistent-storage"
+					plg_command = "vagrant plugin install vagrant-persistent-storage --plugin-version 0.0.21"
+				else
+				 	plg_command = "vagrant plugin install #{plugin}"
+				end
+				if not system plg_command
 					puts "\n\033[33m" << " - Could not install plugin '#{plugin}'. " << "\e[0m\033[41m" <<"Stopped." << "\e[0m"
 					exit -1
 				else
