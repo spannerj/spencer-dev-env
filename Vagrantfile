@@ -63,7 +63,9 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
           if not system 'git', '-C', root_loc, 'pull'
             puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
           else
-            exec "vagrant #{ARGV.join(' ')}"
+            puts colorize_yellow("Update successful.")
+            puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
+            exit 0
           end
         else
           puts colorize_green("This is the latest version.")
