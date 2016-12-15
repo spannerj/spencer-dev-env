@@ -26,7 +26,8 @@ root_loc = File.dirname(__FILE__)
 if ['up'].include? ARGV[0]
   # If plugins have been installed, rerun the original vagrant command and abandon this one
   if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
-    exec "vagrant #{ARGV.join(' ')}" unless ARGV[0] == 'plugin'
+    puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
+    exit 0
   end
 end
 
@@ -39,7 +40,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.2.0"
+  this_version = "1.2.1"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
@@ -75,7 +76,23 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
       puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
     end
   else
-    puts colorize_yellow("Skipping update check as branch is not master")
+    puts colorize_yellow("*******************************************************")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**                     WARNING!                      **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**         YOU ARE NOT ON THE MASTER BRANCH          **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**             AUTO-UPDATE IS DISABLED               **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**          THERE MAY BE UNSTABLE FEATURES           **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("**   IF YOU DON'T KNOW WHY YOU ARE ON THIS BRANCH    **")
+    puts colorize_yellow("**          THEN YOU PROBABLY SHOULDN'T BE!          **")
+    puts colorize_yellow("**                                                   **")
+    puts colorize_yellow("*******************************************************")
+    puts ""
+    puts colorize_yellow("Continuing in 10 seconds (CTRL+C to quit)...")
+    sleep(10)
   end
 end
 

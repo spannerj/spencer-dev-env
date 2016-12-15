@@ -16,12 +16,27 @@ def check_plugins(plugins)
 		raw_list = raw_output.split("\n")
 
 		raw_list.each do |plugin|
+			# skip lines that we dont care about (like version pin info)
+			if plugin.index("(") == nil
+				next
+			end
 			if plugin.index("\e[0m") != nil
 				first = plugin.index("\e[0m")  + 4
 			else
 				first = 0
 			end
-			installed_plugins.push plugin.slice((first)..(plugin.index("(")-1)).strip
+			plugin_name = plugin.slice((first)..(plugin.index("(")-1)).strip
+			# > 0.0.21 is broken (https://github.com/kusnier/vagrant-persistent-storage/issues/58)
+			if plugin_name == "vagrant-persistent-storage" and plugin.index("0.0.21") == nil
+				puts "Not running recommended stable version of vagrant-persistent-storage."
+				if not system "vagrant plugin install vagrant-persistent-storage --plugin-version 0.0.21"
+					puts "Error - Could not install"
+					exit -1
+				else
+					no_missing = false
+				end
+			end
+			installed_plugins.push(plugin_name)
 		end
 
 		plugins.each_with_index do |plugin, index|
@@ -31,8 +46,8 @@ def check_plugins(plugins)
 					puts "\n\033[33m" << " - Could not install plugin '#{plugin}'. " << "\e[0m\033[41m" <<"Stopped." << "\e[0m"
 					exit -1
 				else
-            no_missing = false
-        end
+            		no_missing = false
+        		end
 			end
 		end
 

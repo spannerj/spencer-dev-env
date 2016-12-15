@@ -10,7 +10,7 @@ alias exec="docker-compose exec"
 alias status="docker-compose ps"
 alias run="docker-compose run --rm"
 alias psql="docker-compose exec postgres psql -h postgres -U root -d"
-alias db2="docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2'"
+alias db2="docker-compose exec --user db2inst1 db2 bash -c '~/sqllib/bin/db2'"
 
 function bashin(){
     docker exec -it ${@:1} bash
@@ -46,7 +46,10 @@ function integration-test(){
 }
 
 function acceptance-test(){
-    docker-compose run --rm acceptance-tests ./run_tests.sh
+    docker-compose run --rm ${1} sh run_tests.sh ${@:2}
+}
+function acctest(){
+    docker-compose run --rm ${1} sh run_tests.sh ${@:2}
 }
 
 function manage(){
@@ -74,7 +77,8 @@ function devenv-help(){
     unit-test <name of container> [-r]               -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command).
                                                            if you add -r it will output reports to the test-output folder.
     integration-test <name of container>             -     run the integration tests for an application (this expects there to a be a Makefile with a integrationtest command)
-    acceptance-test                                  -     run the acceptance tests. It expects the repo to be called acceptance-tests and there to be a run_tests.sh
+    acceptance-test | acctest                        -     run the acceptance tests run_tests.sh script inside the given container. If using the skeleton, any further parameters will be passed to cucumber.
+                <name of container> <cucumber args>  
     psql <name of database>                          -     run psql in the postgres container
     db2                                              -     run db2 command line in the db2 container
     manage <name of container> <command>             -     run manage.py commands in a container
