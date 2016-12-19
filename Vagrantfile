@@ -25,7 +25,7 @@ root_loc = File.dirname(__FILE__)
 # Only if vagrant up do we want to check for plugins. Since it's only a one off really.
 if ['up'].include? ARGV[0]
   # If plugins have been installed, rerun the original vagrant command and abandon this one
-  if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
+  if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
     puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
     exit 0
   end
@@ -114,21 +114,6 @@ Vagrant.configure(2) do |config|
   # Make cachier only cache yum instead of rooting about trying to figure things out itself
   config.cache.auto_detect = false
   config.cache.enable :yum
-
-  # Docker persistent storage (cachier can't cope)
-  config.persistent_storage.enabled = true
-  # Put the cache file in the vagrant cache directory - but got to find out where that is first!
-  if ENV.has_key?('VAGRANT_HOME') # Overidden by user
-    config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
-  elsif ENV.has_key?('USERPROFILE') # Windows default
-    config.persistent_storage.location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
-  elsif ENV.has_key?('HOME') # Linux/OSX default
-    config.persistent_storage.location = ENV['HOME'] + "/.vagrant.d/cache/docker_storage.vdi"
-  else # Last resort
-    config.persistent_storage.location = "~/.vagrant.d/cache/docker_storage.vdi"
-  end
-  config.persistent_storage.size = 50000
-  config.persistent_storage.mountpoint = '/var/lib/docker'
 
   # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
   if !(['provision', '--provision'] & ARGV).empty?
@@ -237,6 +222,20 @@ Vagrant.configure(2) do |config|
 
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume, :reload] do
+    # OLD VERSION CLEANUP:
+    # Let's delete old docker storage file to free up some space
+    # Has to go here so it doesn't run while hdd is still attached to VM
+    if ENV.has_key?('VAGRANT_HOME') # Overidden by user
+      docker_storage_location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
+    elsif ENV.has_key?('USERPROFILE') # Windows default
+      docker_storage_location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
+    elsif ENV.has_key?('HOME') # Linux/OSX default
+      docker_storage_location = ENV['HOME'] + "/.vagrant.d/cache/docker_storage.vdi"
+    else # Last resort
+      docker_storage_location = "~/.vagrant.d/cache/docker_storage.vdi"
+    end
+    File.delete(docker_storage_location) if File.exist?(docker_storage_location)
+
     # Check the apps for a postgres SQL snippet to add to the SQL that then gets run.
     # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group),
     # you'll need to delete the postgres container and it's volume else you'll get errors.
