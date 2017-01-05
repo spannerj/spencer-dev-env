@@ -40,17 +40,6 @@ if ['up'].include? ARGV[0]
     puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
     exit 0
   end
-  # Persistent storage phasing out message
-  # Remove this and the other persistent storage bits once everyone has got rid of it
-  if File.exist?(docker_storage_location)
-    puts ""
-    print colorize_yellow("***** DEPRECATION WARNING *****")
-    puts ""
-    print colorize_yellow("I've found a persistent docker storage cache at #{docker_storage_location}. It is known to cause occasional boot problems so we no longer create it for new machines. The first February 2017 version of the dev-env will not support it at all, so you must vagrant destroy AND delete the file before then.")
-    puts ""
-    puts colorize_yellow("Continuing in 5 seconds...")
-    sleep(10)
-  end
 end
 
 # If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
@@ -216,7 +205,7 @@ Vagrant.configure(2) do |config|
     # remove DEV_ENV_CONTEXT_FILE created on provisioning
     confirm = nil
     until ["Y", "y", "N", "n"].include?(confirm)
-      confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (y/n) ")
+      confirm = ask colorize_yellow("Would you like to KEEP your custom dev-env configuration files? (y/n) ")
     end
     if confirm.upcase == "N"
       File.delete(DEV_ENV_CONTEXT_FILE)
@@ -227,6 +216,19 @@ Vagrant.configure(2) do |config|
     # remove .commodities.yml created on provisioning
     if File.exists?(root_loc + '/.commodities.yml')
       File.delete(root_loc + '/.commodities.yml')
+    end
+  end
+
+  # After a destroy, try to get rid of the peristant storage file since we don't want to use it any more. Causes problems with multiple dev envs and random plugin breakage.
+  config.trigger.after :destroy do
+    if File.exist?(docker_storage_location)
+      confirm = nil
+      until ["Y", "y", "N", "n"].include?(confirm)
+        confirm = ask colorize_yellow("Would you like to DELETE your docker persistent cache file? It is known to cause problems so we would like to phase it out - therefore if you choose to delete it, it will not be recreated in future. Note that if you have other dev-env instances that still use it, you should say no, else they will break! (y/n) ")
+      end
+      if confirm.upcase == "Y"
+        File.delete(docker_storage_location)
+      end
     end
   end
 
