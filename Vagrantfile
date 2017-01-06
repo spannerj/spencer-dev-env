@@ -13,6 +13,7 @@ require_relative 'scripts/host/alembic_provision'
 require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
+require_relative 'scripts/host/supporting_files'
 require 'fileutils'
 require "rubygems"
 require "json"
@@ -198,6 +199,10 @@ Vagrant.configure(2) do |config|
 
     # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(root_loc, config)
+
+    # Download any external supporting files
+    puts colorize_lightblue("Downloading supporting files")
+    load_supporting_files(root_loc)
   end
 
   # In the event of user requesting a vagrant destroy
