@@ -10,3 +10,4 @@ docker_storage.vdi
 .commodities.yml
 mpapis.asc
 logstash*.log
+adfs_Dev.crt

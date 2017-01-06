@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.3.0
+
+* You will now be prompted to remove the docker persistent storage file during vagrant destroy. This is optional (for now)
+* Docker-compose updated to 1.9.0 for new machines
+* ADFS certificate is now dynamically loaded from a Gitlab snippet
+* ELK stack updated to v5.1.1
+
 ## v1.2.1
 
 * Pin version of vagrant-persistent-storage plugin to fix IDE controller bug

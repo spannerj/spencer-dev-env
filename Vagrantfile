@@ -13,6 +13,7 @@ require_relative 'scripts/host/alembic_provision'
 require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
+require_relative 'scripts/host/supporting_files'
 require 'fileutils'
 require "rubygems"
 require "json"
@@ -22,10 +23,21 @@ require "uri"
 # Where is this file located?
 root_loc = File.dirname(__FILE__)
 
+# Find out where persistent storage file might live
+if ENV.has_key?('VAGRANT_HOME') # Overidden by user
+  docker_storage_location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
+elsif ENV.has_key?('USERPROFILE') # Windows default
+  docker_storage_location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
+elsif ENV.has_key?('HOME') # Linux/OSX default
+  docker_storage_location = ENV['HOME'] + "/.vagrant.d/cache/docker_storage.vdi"
+else # Last resort
+  docker_storage_location = "~/.vagrant.d/cache/docker_storage.vdi"
+end
+
 # Only if vagrant up do we want to check for plugins. Since it's only a one off really.
 if ['up'].include? ARGV[0]
   # If plugins have been installed, rerun the original vagrant command and abandon this one
-  if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload", "vagrant-persistent-storage"]
+  if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
     puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
     exit 0
   end
@@ -40,7 +52,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.2.1"
+  this_version = "1.3.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
@@ -107,7 +119,6 @@ Vagrant.configure(2) do |config|
   config.vm.box_version      = "0.5.0"
   config.vm.box_check_update = false
 
-
   # Configure cached packages to be shared between instances of the same base box.
  	# More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
   config.cache.scope       = :box
@@ -115,20 +126,13 @@ Vagrant.configure(2) do |config|
   config.cache.auto_detect = false
   config.cache.enable :yum
 
-  # Docker persistent storage (cachier can't cope)
-  config.persistent_storage.enabled = true
-  # Put the cache file in the vagrant cache directory - but got to find out where that is first!
-  if ENV.has_key?('VAGRANT_HOME') # Overidden by user
-    config.persistent_storage.location = ENV['VAGRANT_HOME'] + "/cache/docker_storage.vdi"
-  elsif ENV.has_key?('USERPROFILE') # Windows default
-    config.persistent_storage.location = ENV['USERPROFILE'] + "/.vagrant.d/cache/docker_storage.vdi"
-  elsif ENV.has_key?('HOME') # Linux/OSX default
-    config.persistent_storage.location = ENV['HOME'] + "/.vagrant.d/cache/docker_storage.vdi"
-  else # Last resort
-    config.persistent_storage.location = "~/.vagrant.d/cache/docker_storage.vdi"
+  # If they have persisted with the persistent storage, initialise the config for it
+  if File.exist?(docker_storage_location)
+    config.persistent_storage.enabled = true
+    config.persistent_storage.location = docker_storage_location
+    config.persistent_storage.size = 50000
+    config.persistent_storage.mountpoint = '/var/lib/docker'
   end
-  config.persistent_storage.size = 50000
-  config.persistent_storage.mountpoint = '/var/lib/docker'
 
   # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
   if !(['provision', '--provision'] & ARGV).empty?
@@ -185,6 +189,10 @@ Vagrant.configure(2) do |config|
 
     # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(root_loc, config)
+
+    # Download any external supporting files
+    puts colorize_lightblue("Downloading supporting files")
+    load_supporting_files(root_loc)
   end
 
   # In the event of user requesting a vagrant destroy
@@ -192,7 +200,7 @@ Vagrant.configure(2) do |config|
     # remove DEV_ENV_CONTEXT_FILE created on provisioning
     confirm = nil
     until ["Y", "y", "N", "n"].include?(confirm)
-      confirm = ask colorize_yellow("Would you like to keep your custom dev-env configuration files? (y/n) ")
+      confirm = ask colorize_yellow("Would you like to KEEP your custom dev-env configuration files? (y/n) ")
     end
     if confirm.upcase == "N"
       File.delete(DEV_ENV_CONTEXT_FILE)
@@ -203,6 +211,19 @@ Vagrant.configure(2) do |config|
     # remove .commodities.yml created on provisioning
     if File.exists?(root_loc + '/.commodities.yml')
       File.delete(root_loc + '/.commodities.yml')
+    end
+  end
+
+  # After a destroy, try to get rid of the peristant storage file since we don't want to use it any more. Causes problems with multiple dev envs and random plugin breakage.
+  config.trigger.after :destroy do
+    if File.exist?(docker_storage_location)
+      confirm = nil
+      until ["Y", "y", "N", "n"].include?(confirm)
+        confirm = ask colorize_yellow("Would you like to DELETE your docker persistent cache file? It is known to cause problems so we would like to phase it out - therefore if you choose to delete it, it will not be recreated in future. Note that if you have other dev-env instances that still use it, you should say no, else they will break! (y/n) ")
+      end
+      if confirm.upcase == "Y"
+        File.delete(docker_storage_location)
+      end
     end
   end
 
