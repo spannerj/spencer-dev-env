@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.1
+
+* In future you will be asked if you want to apply a dev-env update. If you decline, you will not be asked again until the next day.
+
 ## v1.3.0
 
 * You will now be prompted to remove the docker persistent storage file during vagrant destroy. This is optional (for now)
