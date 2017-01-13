@@ -52,7 +52,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.3.0"
+  this_version = "1.1.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
@@ -66,18 +66,52 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
       if response.code == "200"
         result = JSON.parse(response.body)
         latest_version = result["version"]
+        # Is there a newer version available?
         if Gem::Version.new(latest_version) > Gem::Version.new(this_version)
           puts colorize_yellow("A new version is available - v#{latest_version}")
           puts colorize_yellow("Changes:")
           result["changes"].each { |change| puts colorize_yellow("  " + change) }
-          puts colorize_yellow("Updating in 10 seconds...")
-          sleep(10)
-          if not system 'git', '-C', root_loc, 'pull'
-            puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
-          else
-            puts colorize_yellow("Update successful.")
-            puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
-            exit 0
+          puts ""
+          # Have we already asked the user to update today?
+          ask_update = true
+          UPDATE_CHECK_CONTEXT_FILE = root_loc + "/.update-check-context"
+          if File.exists?(UPDATE_CHECK_CONTEXT_FILE)
+            parsed_date = Date.strptime(File.read(UPDATE_CHECK_CONTEXT_FILE), '%Y-%m-%d')
+            if Date.today == parsed_date
+              puts colorize_yellow("You've already said you don't want to update today, so I won't ask again. To update manually, run git pull.")
+              puts ""
+              ask_update = false
+            else
+              # We have not asked today yet, delete the file
+              File.delete(UPDATE_CHECK_CONTEXT_FILE)
+            end
+          end
+          if ask_update
+            # Ask the user if they want to pull down the new update now, or just carry on booting up
+            print colorize_yellow("Would you like to update now? (y/n) ")
+            confirm = STDIN.gets.chomp
+            until confirm.upcase.start_with?('Y', 'N')
+              print colorize_yellow("Would you like to update now? (y/n) ")
+              confirm = STDIN.gets.chomp
+            end
+            if confirm.upcase.start_with?('Y')
+              # (try to) run the update
+              if not system 'git', '-C', root_loc, 'pull'
+                puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
+                sleep(5)
+              else
+                puts colorize_yellow("Update successful.")
+                puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
+                exit 0
+              end
+            else
+              puts ""
+              puts colorize_yellow("Okay. I'll ask again tomorrow. If you want to update in the meantime, simply run git pull yourself.'")
+              puts colorize_yellow("Continuing in 5 seconds...")
+              puts ""
+              File.write(UPDATE_CHECK_CONTEXT_FILE, Date.today.to_s)
+              sleep(5)
+            end
           end
         else
           puts colorize_green("This is the latest version.")
