@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.2
+
+* Changed Python from a custom LR build to IUS Community Project in all Python base images. We did not create a version 3 as it is important to catch (unlikely) compatibility issues now rather than when your apps hit Integration
+* Updated Gradle to 3.3 in base Java image
+
 ## v1.3.1
 
 * In future you will be asked if you want to apply a dev-env update. If you decline, you will not be asked again until the next day.

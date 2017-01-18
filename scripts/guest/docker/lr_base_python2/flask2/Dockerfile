@@ -34,4 +34,4 @@ RUN pip3 -q install gunicorn==19.6.0 eventlet==0.19.0
 #   Access log is redirected to stderr.
 #   Flask app object is located in manage.py
 #   Dynamic reloading is enabled.
-CMD ["/usr/local/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "manage:manager.app", "--reload"]
+CMD ["/usr/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "manage:manager.app", "--reload"]
