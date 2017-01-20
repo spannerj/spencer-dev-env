@@ -24,6 +24,6 @@ RUN yum clean all && \
 RUN yum -q -y groupinstall "Development Tools" --skip-broken && \
   yum -q -y install wget
 
-# Install IUS repo then install python3 and pip3.
+# Install IUS repo then install python3, pip3 and python34u-devel (for psycopg2 etc)
 RUN yum install -q -y https://centos7.iuscommunity.org/ius-release.rpm  && \
-  yum install -q -y python34u python34u-pip
+  yum install -q -y python34u python34u-pip python34u-devel
