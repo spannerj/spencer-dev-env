@@ -6,6 +6,9 @@
 # Set the base image to Centos. NOTE: By specifying the minor version tag, it will not receive updates!
 FROM centos:centos7.2.1511
 
+# Install support for overlayfs (the default in docker 1.13+)
+RUN yum -y -q install yum-plugin-ovl
+
 # Force stdin, stdout and stderr to be totally unbuffered
 ENV PYTHONUNBUFFERED yes
 
