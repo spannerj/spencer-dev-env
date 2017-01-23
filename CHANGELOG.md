@@ -3,6 +3,7 @@
 ## 1.3.1.1
 
 * CRITICAL: Added overlayfs support into all base dockerfiles, as that is now the default used by Docker 1.13.
+  * Also related to docker 1.13 support - updated ELK stack to 5.1.2.
 
 ## v1.3.1
 
