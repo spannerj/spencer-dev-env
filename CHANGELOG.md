@@ -2,10 +2,13 @@
 
 ## v1.3.2
 
-* CRITICAL: Added overlayfs support into all base dockerfiles, as that is now the default used by Docker 1.13.
-  * Also related to docker 1.13 support - updated ELK stack to 5.1.2.
 * Changed Python from a custom LR build to IUS Community Project in all Python base images. We did not create a version 3 of the dockerfiles as it is important to catch (unlikely) compatibility issues now rather than when your apps hit Integration
 * Updated Gradle to 3.3 in base Java image
+
+## 1.3.1.1
+
+* CRITICAL: Added overlayfs support into all base dockerfiles, as that is now the default used by Docker 1.13.
+  * Also related to docker 1.13 support - updated ELK stack to 5.1.2.
 
 ## v1.3.1
 
