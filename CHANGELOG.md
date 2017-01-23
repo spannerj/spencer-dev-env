@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1.1
+
+* CRITICAL: Added overlayfs support into all base dockerfiles, as that is now the default used by Docker 1.13.
+
 ## v1.3.1
 
 * In future you will be asked if you want to apply a dev-env update. If you decline, you will not be asked again until the next day.
