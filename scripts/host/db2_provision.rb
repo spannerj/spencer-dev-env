@@ -37,6 +37,7 @@ def provision_db2(root_loc)
           puts colorize_yellow("DB2 has previously been provisioned for #{appname}, skipping")
         else
           docker_commands.push("docker cp /vagrant/apps/#{appname}/fragments/db2-init-fragment.sql db2:/#{appname}-init.sql")
+          docker_commands.push("docker exec db2 bash -c 'chmod o+r /#{appname}-init.sql'")
           docker_commands.push("docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2 -tvf /#{appname}-init.sql'")
           prepared_one = true
           # Update the .commodities.yml to indicate that db2 has now been provisioned
