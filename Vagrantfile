@@ -97,7 +97,8 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
             if confirm.upcase.start_with?('Y')
               # (try to) run the update
               if not system 'git', '-C', root_loc, 'pull'
-                puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
+                puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine.")
+                puts colorize_yellow("Continuing in 5 seconds...")
                 sleep(5)
               else
                 puts colorize_yellow("Update successful.")
@@ -117,11 +118,15 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
           puts colorize_green("This is the latest version.")
         end
       else
-        puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+        puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine.")
+        puts colorize_yellow("Continuing in 5 seconds...")
+        sleep(5)
       end
     rescue StandardError => e
       puts e
-      puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+      puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine.")
+      puts colorize_yellow("Continuing in 5 seconds...")
+      sleep(5)
     end
   else
     puts colorize_yellow("*******************************************************")
@@ -206,7 +211,8 @@ Vagrant.configure(2) do |config|
           FileUtils.rm_r root_loc + '/dev-env-project'
         end
       end
-      exit 1
+      puts colorize_yellow("Continuing in 10 seconds (CTRL+C to quit)...")
+      sleep(10)
     end
 
     # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml

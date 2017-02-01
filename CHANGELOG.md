@@ -4,6 +4,8 @@
 
 * Changed Python from a custom LR build to IUS Community Project in all Python base images. We did not create a version 3 of the dockerfiles as it is important to catch (unlikely) compatibility issues now rather than when your apps hit Integration
 * Updated Gradle to 3.3 in base Java image
+* Fixed DB2 provisioning issue if init SQL file has strict permissions
+* Allow machine to (eventually) start successfully even if internet is down (#34)
 
 ## 1.3.1.1
 
