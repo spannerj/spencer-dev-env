@@ -11,12 +11,13 @@ RUN yum -y -q install yum-plugin-ovl
 
 # Update system, despite a warning against this: https://docs.docker.com/articles/dockerfile_best-practices/#run
 # The official CentOS Dockerfiles repo recommends it: https://github.com/CentOS/CentOS-Dockerfiles/blob/master/nginx/centos7/Dockerfile#L10
-RUN yum clean all && \
-  yum -q -y update
+RUN yum -q -y clean expire-cache && \
+  yum -q -y update && \
+  yum -q -y clean all
 
 # Install rbenv/phantomjs system dependencies
-RUN yum install -y gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel \
-  openssl-devel make bzip2 autoconf automake libtool bison iconv-devel git-core wget fontconfig
+RUN yum install -y -q gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel \
+  openssl-devel make bzip2 autoconf automake libtool bison iconv-devel git-core wget fontconfig && yum -q -y clean all
 
 # Everything between here and the phantomjs install is shamelessly ripped from
 # https://github.com/docker-library/ruby/blob/master/2.3/Dockerfile
