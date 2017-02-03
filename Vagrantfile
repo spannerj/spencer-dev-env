@@ -135,7 +135,7 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
     puts colorize_yellow("**                                                   **")
     puts colorize_yellow("**         YOU ARE NOT ON THE MASTER BRANCH          **")
     puts colorize_yellow("**                                                   **")
-    puts colorize_yellow("**             AUTO-UPDATE IS DISABLED               **")
+    puts colorize_yellow("**            UPDATE CHECKING IS DISABLED            **")
     puts colorize_yellow("**                                                   **")
     puts colorize_yellow("**          THERE MAY BE UNSTABLE FEATURES           **")
     puts colorize_yellow("**                                                   **")
