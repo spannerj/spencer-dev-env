@@ -18,10 +18,13 @@ echo "export PS1='${BLUEISH}DEVENV ${PINKISH}\w ${ORANGEISH}\$ ${PLAIN}'" >> ${H
 sed -i -e 's/.*switch to workspace//' ${HOME}/.bash_profile
 echo 'cd /vagrant; # switch to workspace' >> ${HOME}/.bash_profile
 
-# Update all packages (except kernel files - prevents guest additions breakage)
-echo 'Updating all currently installed non-kernel packages'
-yum clean all
-yum -y -q --exclude=kernel\* update
-
 # Add helpful aliases (runs on every login)
 echo "source /vagrant/scripts/guest/add-aliases.sh" >> ${HOME}/.bash_profile
+
+yum -q -y clean expire-cache
+
+# Update all packages (except kernel files - prevents guest additions breakage)
+echo 'Updating all currently installed non-kernel packages'
+yum -y -q --exclude=kernel\* update
+# Install DKMS - prevents guest additions breaking when the kernel is updated
+yum -q -y install dkms
