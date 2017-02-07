@@ -27,6 +27,8 @@ def provision_adfs(root_loc):
                         end
                         # Set status of the commodity
                         set_commodity_provision_status(root_loc, "#{appname}", "adfs", true)
+                    else
+                        puts colorize_yellow("#{appname} said it required adfs but provided no adfs fragment.")
                     end
                 end
             end
@@ -40,7 +42,7 @@ def provision_adfs(root_loc):
         hosts_file = "C:/Windows/System32/drivers/etc/hosts"
     else
         # LINUX or MAC OS (NOT TESTED)
-        hosts_file = "~/etc/hosts"
+        hosts_file = "/etc/hosts"
     end
 
     host_additions.each do |s|
