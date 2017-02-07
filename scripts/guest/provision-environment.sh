@@ -26,5 +26,3 @@ yum -q -y clean expire-cache
 # Update all packages (except kernel files - prevents guest additions breakage)
 echo 'Updating all currently installed non-kernel packages'
 yum -y -q --exclude=kernel\* update
-# Install DKMS - prevents guest additions breaking when the kernel is updated
-yum -q -y install dkms
