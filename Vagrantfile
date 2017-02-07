@@ -14,6 +14,7 @@ require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
 require_relative 'scripts/host/supporting_files'
+require_relative 'scripts/host/adfs_provision'
 require 'fileutils'
 require "rubygems"
 require "json"
@@ -311,6 +312,8 @@ Vagrant.configure(2) do |config|
     provision_elasticsearch(root_loc)
     # Nginx
     provision_nginx(root_loc)
+    # ADFS (Hosts File)
+    provision_adfs(root_loc)
 
     # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
     if File.size(root_loc + '/.docker-compose-file-list') != 0
