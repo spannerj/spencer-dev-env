@@ -23,7 +23,9 @@ def provision_adfs(root_loc)
                         # Allow each app to ammend more than one line to the file.
                         hosts = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/host-fragments.yml")
                         hosts["hosts"].each do |entry|
-                            host_additions.push(entry)  # Must be in the form <IP Address><Space><Domain Name> e.g "127.0.0.1 ThisGoesToLocalHost"
+                            unless host_additions.include? entry
+                                host_additions.push(entry)  # Must be in the form <IP Address><Space><Domain Name> e.g "127.0.0.1 ThisGoesToLocalHost"
+                            end
                         end
                         # Set status of the commodity
                         set_commodity_provision_status(root_loc, "#{appname}", "adfs", true)
@@ -46,7 +48,12 @@ def provision_adfs(root_loc)
         hosts_file = "/etc/hosts"
     end
 
+    file = File.readlines(hosts_file)
     host_additions.each do |s|
-        File.write(hosts_file, "\n" + s, mode: 'a')
+        if file.grep(s).any?
+            puts colorize_yellow("Host already has host of: #{s}")
+        else
+            File.write(hosts_file, "\n" + s, mode: 'a')
+        end
     end
 end
