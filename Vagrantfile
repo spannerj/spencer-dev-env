@@ -37,7 +37,7 @@ end
 # Only if vagrant up do we want to check for plugins. Since it's only a one off really.
 if ['up'].include? ARGV[0]
   # If plugins have been installed, rerun the original vagrant command and abandon this one
-  if not check_plugins ["vagrant-cachier", "vagrant-triggers", "vagrant-reload"]
+  if not check_plugins ["vagrant-cachier", "vagrant-triggers"]
     puts colorize_yellow("Please rerun your command (vagrant #{ARGV.join(' ')})")
     exit 0
   end
@@ -46,13 +46,27 @@ end
 # If user is doing a reload, the raw script commands like updating app repos will be done before the machine halts.
 # So stop the apps now, just so they don't try to reload and run any new code.
 if ['reload', 'halt'].include? ARGV[0]
-  puts colorize_lightblue('Stopping apps')
-  system "vagrant ssh -c \"docker-compose stop\""
+  if File.exists?(root_loc + '/.docker-compose-file-list') && File.size(root_loc + '/.docker-compose-file-list') != 0
+    # If this file exists it must have previously got to the point of creating the containers
+    # and if it has something in we know there are apps to stop and won't get an error
+    puts colorize_lightblue('Stopping apps')
+    system "vagrant ssh -c \"docker-compose stop\""
+  end
 end
 
+# If a quick reload file has been created, we'll skip the up/resume/reload section below, so no dev-env or app updates
+QUICK_RELOAD_FILE = root_loc + "/.quick-reload"
+quick_reload = false
+if ['up', 'resume', 'reload'].include?(ARGV[0]) && File.exists?(QUICK_RELOAD_FILE)
+  quick_reload = true
+  File.delete(QUICK_RELOAD_FILE)
+  puts colorize_lightblue("Quick reload request detected. Whoosh!")
+end
+
+
 # Only if vagrant up/resume do we want to check for update
-if ['up', 'resume', 'reload'].include? ARGV[0]
-  this_version = "1.3.1.2"
+if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
+  this_version = "1.3.2"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
@@ -97,7 +111,8 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
             if confirm.upcase.start_with?('Y')
               # (try to) run the update
               if not system 'git', '-C', root_loc, 'pull'
-                puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine...")
+                puts colorize_yellow("There was an error retrieving the new dev-env. Sorry. I'll just get on with starting the machine.")
+                puts colorize_yellow("Continuing in 5 seconds...")
                 sleep(5)
               else
                 puts colorize_yellow("Update successful.")
@@ -117,11 +132,15 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
           puts colorize_green("This is the latest version.")
         end
       else
-        puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+        puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine.")
+        puts colorize_yellow("Continuing in 5 seconds...")
+        sleep(5)
       end
     rescue StandardError => e
       puts e
-      puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine...")
+      puts colorize_yellow("There was an error retrieving the current dev-env version (is AWS GitLab down?). I'll just get on with starting the machine.")
+      puts colorize_yellow("Continuing in 5 seconds...")
+      sleep(5)
     end
   else
     puts colorize_yellow("*******************************************************")
@@ -130,7 +149,7 @@ if ['up', 'resume', 'reload'].include? ARGV[0]
     puts colorize_yellow("**                                                   **")
     puts colorize_yellow("**         YOU ARE NOT ON THE MASTER BRANCH          **")
     puts colorize_yellow("**                                                   **")
-    puts colorize_yellow("**             AUTO-UPDATE IS DISABLED               **")
+    puts colorize_yellow("**            UPDATE CHECKING IS DISABLED            **")
     puts colorize_yellow("**                                                   **")
     puts colorize_yellow("**          THERE MAY BE UNSTABLE FEATURES           **")
     puts colorize_yellow("**                                                   **")
@@ -176,7 +195,7 @@ Vagrant.configure(2) do |config|
   end
 
   # Only if vagrant up/resume do we want to create dev-env configuration
-  if ['up', 'resume', 'reload'].include? ARGV[0]
+  if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
       puts colorize_green("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
@@ -206,7 +225,8 @@ Vagrant.configure(2) do |config|
           FileUtils.rm_r root_loc + '/dev-env-project'
         end
       end
-      exit 1
+      puts colorize_yellow("Continuing in 10 seconds (CTRL+C to quit)...")
+      sleep(10)
     end
 
     # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
@@ -217,16 +237,14 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Creating list of commodities")
     create_commodities_list(root_loc)
 
-    # Call the ruby function to create the docker compose file containing the apps and their commodities
-    puts colorize_lightblue("Creating docker-compose")
-    prepare_compose(root_loc)
-
-    # Find the ports of the apps and commodities on the host and add port forwards for them
-    create_port_forwards(root_loc, config)
-
     # Download any external supporting files
     puts colorize_lightblue("Downloading supporting files")
     load_supporting_files(root_loc)
+  end
+
+  if ['up', 'resume', 'reload'].include?(ARGV[0])
+    # Find the ports of the apps and commodities on the host and add port forwards for them
+    create_port_forwards(root_loc, config)
   end
 
   # In the event of user requesting a vagrant destroy
@@ -245,6 +263,12 @@ Vagrant.configure(2) do |config|
     # remove .commodities.yml created on provisioning
     if File.exists?(root_loc + '/.commodities.yml')
       File.delete(root_loc + '/.commodities.yml')
+    end
+    if File.exists?(root_loc + '/.docker-compose-file-list')
+      File.delete(root_loc + '/.docker-compose-file-list')
+    end
+    if File.exists?(QUICK_RELOAD_FILE)
+      File.delete(QUICK_RELOAD_FILE)
     end
   end
 
@@ -267,31 +291,48 @@ Vagrant.configure(2) do |config|
   # Install docker and docker-compose
   config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/install-docker.sh"
 
-  # Build and start all the containers
-  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/docker/docker-provision.sh", run: "always"
-
   # If the dev env configuration repo contains a script, provision it here
   # This should only be for temporary use during early app development - see the README for more info
   if File.exists?(root_loc + '/dev-env-project/environment.sh')
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
   end
 
-  #### COMMENTING OUT GUEST ADDITIONS UPDATES START
-  # Reason: the base box now has 5.0 level additions.
-  # Also, the reboot step causes problems when doing a reload --provision now that we've had to remove the halt/up trick.
-
-  # Update Virtualbox Guest Additions
-  #config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/setup-vboxguest.sh"
-
-  # Reload VM after Guest Additions have been installed, so that shared folders work.
-  # Always force reload last, after every provisioner has run, otherwise if a provisioner
-  # is set to always run it will get run twice.
-  #config.vm.provision :reload
-
-   #### COMMENTING OUT GUEST ADDITIONS UPDATES END
-
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume, :reload] do
+    # We want up to date kernel to ensure maximum compatibility with advanced docker features like overlayfs
+    puts colorize_lightblue("Updating Linux Kernel")
+    if system "vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel.sh\""
+      # If nonzero exit code, kernel must have updated
+      puts colorize_yellow("Linux Kernel has been updated.")
+      puts colorize_yellow("Please restart your machine (vagrant reload)")
+      File.write(QUICK_RELOAD_FILE, "Hi")
+      exit
+    else
+      puts colorize_green("Kernel is up to date")
+    end
+
+    # Before we start the heavy lifting, update guest additions if necessary.
+    puts colorize_lightblue("Updating VirtualBox Guest Additions")
+    if system "vagrant ssh -c \"source /vagrant/scripts/guest/setup-vboxguest.sh\""
+      # If nonzero exit code, additions must have updated
+      puts colorize_yellow("VirtualBox Guest Additions have been updated.")
+      puts colorize_yellow("Please restart your machine (vagrant reload)")
+      File.write(QUICK_RELOAD_FILE, "Hi")
+      exit
+    else
+      puts colorize_green("VirtualBox Guest Additions is up to date")
+    end
+
+    # Call the ruby function to create the docker compose file containing the apps and their commodities
+    puts colorize_lightblue("Creating docker-compose")
+    prepare_compose(root_loc)
+
+    # Build and start all the containers
+    if not system "vagrant ssh -c \"source /vagrant/scripts/guest/docker/docker-provision.sh\""
+      puts colorize_red("Something went wrong when creating your Docker images or containers. Check the output above.")
+      exit
+    end
+
     # Check the apps for a postgres SQL snippet to add to the SQL that then gets run.
     # If you later modify .commodities to allow this to run again (e.g. if you've added new apps to your group),
     # you'll need to delete the postgres container and it's volume else you'll get errors.
@@ -306,7 +347,7 @@ Vagrant.configure(2) do |config|
     # Nginx
     provision_nginx(root_loc)
 
-    # The images were built and containers created earlier. Now that commodoties are all provisioned, we can start the containers
+    # The images were built and containers created earlier. Now that commodities are all provisioned, we can start the containers
     if File.size(root_loc + '/.docker-compose-file-list') != 0
       puts colorize_lightblue("Starting containers")
       system "vagrant ssh -c \"docker-compose up --no-build -d \""

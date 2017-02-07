@@ -41,6 +41,8 @@ if ! [ -z "$COMPOSE_FILE" ]; then
 
   echo "- - - (Re)creating docker containers - - -"
   /usr/local/bin/docker-compose create --no-build
+  # If the exit code of the create command was not 0 (i.e. it failed) then bomb out of the whole process here so it's obvious to the user where an image failed to build
+  rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 fi
 
 echo "- - - Removing any orphaned docker volumes - - -"
@@ -53,4 +55,4 @@ if [ -n "$images" ]; then
 fi
 
 # Needed for Elasticsearch 5.0 docker to run
-sysctl -w vm.max_map_count=262144 > /dev/null 2>&1
+sudo sysctl -w vm.max_map_count=262144 > /dev/null 2>&1

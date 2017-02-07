@@ -26,7 +26,10 @@ ENV TEMPLATES_AUTO_RELOAD true
 WORKDIR /src
 
 # Install gunicorn and eventlet
-RUN pip3 -q install gunicorn==19.6.0 eventlet==0.19.0
+# When installing via IUS, gunicorn now goes to usr/bin
+# Copy it to usr/local/bin for backwards compatibility in case anyone is using their own CMD
+RUN pip3 -q install gunicorn==19.6.0 eventlet==0.19.0 && \
+  cp /usr/bin/gunicorn /usr/local/bin/gunicorn
 
 # The command to run the app.
 #   Eventlet is used as the (asynch) worker.
@@ -34,4 +37,4 @@ RUN pip3 -q install gunicorn==19.6.0 eventlet==0.19.0
 #   Access log is redirected to stderr.
 #   Flask app object is located in manage.py
 #   Dynamic reloading is enabled.
-CMD ["/usr/local/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "manage:manager.app", "--reload"]
+CMD ["/usr/bin/gunicorn", "-k", "eventlet", "--pythonpath", "/src", "--access-logfile", "-", "manage:manager.app", "--reload"]

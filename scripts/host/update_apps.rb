@@ -33,7 +33,8 @@ def update_apps(root_loc)
         if not system 'git', '-C', "#{root_loc}/apps/#{appname}", 'fetch', 'origin'
           # If there is a git error we shouldn't continue
           puts colorize_red("Error while updating #{appname}")
-          exit 1
+          puts colorize_yellow("Continuing in 3 seconds...")
+          sleep(3)
         end
       else
         puts colorize_lightblue("#{appname} does not yet exist, so I will clone it")
@@ -41,7 +42,8 @@ def update_apps(root_loc)
         if not system 'git', 'clone', "#{repo}", "#{root_loc}/apps/#{appname}"
           # If there is a git error we shouldn't continue
           puts colorize_red("Error while cloning #{appname}")
-          exit 1
+          puts colorize_yellow("Continuing in 3 seconds...")
+          sleep(3)
         end
         # What branch are we working on?
         current_branch = `git -C #{root_loc}/apps/#{appname} rev-parse --abbrev-ref HEAD`.strip
