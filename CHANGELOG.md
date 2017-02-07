@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1.2
+
+* Reduced elasticsearch-logs memory usage to 256m from 1g
+* Introduced new v2 base java Dockerfile with more memory-efficient CMD for apps that use shadowjar plugin
+
 ## 1.3.1.1
 
 * CRITICAL: Added overlayfs support into all base dockerfiles, as that is now the default used by Docker 1.13.
