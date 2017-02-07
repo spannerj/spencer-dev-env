@@ -4,7 +4,7 @@ require_relative 'utilities'
 #
 # root_loc - The root location of the development environment.
 #
-def provision_adfs(root_loc):
+def provision_adfs(root_loc)
     require 'yaml'
     host_additions = [] # Holds a list of hosts file entries
 
@@ -23,7 +23,7 @@ def provision_adfs(root_loc):
                         # Allow each app to ammend more than one line to the file.
                         hosts = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/host-fragments.yml")
                         hosts["hosts"].each do |entry|
-                            host_additions.push(entry)
+                            host_additions.push(entry)  # Must be in the form <IP Address><Space><Domain Name> e.g "127.0.0.1 ThisGoesToLocalHost"
                         end
                         # Set status of the commodity
                         set_commodity_provision_status(root_loc, "#{appname}", "adfs", true)
@@ -37,6 +37,7 @@ def provision_adfs(root_loc):
     
     # Now modify the host's file according to OS
     hosts_file = nil
+    puts colorize_lightblue("Additions: #{host_additions}")
     if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
         # WINDOWS
         hosts_file = "C:/Windows/System32/drivers/etc/hosts"
@@ -46,6 +47,6 @@ def provision_adfs(root_loc):
     end
 
     host_additions.each do |s|
-        File.write(hosts_file, s, mode: 'a')
+        File.write(hosts_file, "\n" + s, mode: 'a')
     end
-
+end
