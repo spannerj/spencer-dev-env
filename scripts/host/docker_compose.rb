@@ -21,7 +21,9 @@ def prepare_compose(root_loc)
     commodities = YAML.load_file("#{root_loc}/.commodities.yml")
     if commodities.key?("commodities")
       commodities["commodities"].each do |commodity_info|
-        commodity_list.push("/vagrant/scripts/guest/docker/#{commodity_info}/docker-compose-fragment.yml")
+        unless commodity_info.eql? "adfs" # Special Case
+          commodity_list.push("/vagrant/scripts/guest/docker/#{commodity_info}/docker-compose-fragment.yml")
+        end
       end
     end
 
