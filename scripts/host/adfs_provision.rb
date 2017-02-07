@@ -51,7 +51,7 @@ def provision_adfs(root_loc)
     file = File.readlines(hosts_file)
     host_additions.each do |s|
         if file.grep(s).any?
-            puts colorize_yellow("Host already has host of: #{s}")
+            puts colorize_yellow("Host already has entry: #{s}")
         else
             File.write(hosts_file, "\n" + s, mode: 'a')
         end
