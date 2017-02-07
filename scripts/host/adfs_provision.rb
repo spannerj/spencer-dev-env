@@ -18,6 +18,7 @@ def provision_adfs(root_loc):
                 needs_adfs = dependencies.key?("commodities") && dependencies["commodities"].include?('adfs')
                 if needs_adfs
                     # We found one with adfs!
+                    puts colorize_pink("Found an ADFS provision for #{appname}")
                     if File.exists?("#{root_loc}/apps/#{appname}/fragments/host-fragments.yml")
                         # Allow each app to ammend more than one line to the file.
                         hosts = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/host-fragments.yml")
