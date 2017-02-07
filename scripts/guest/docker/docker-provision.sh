@@ -6,7 +6,8 @@ docker build -t lr_base_python_flask:1 /vagrant/scripts/guest/docker/lr_base_pyt
 docker build -t lr_base_python:latest -t lr_base_python:2 /vagrant/scripts/guest/docker/lr_base_python2
 docker build -t lr_base_python_flask:latest -t lr_base_python_flask:2 /vagrant/scripts/guest/docker/lr_base_python2/flask2
 
-docker build -t lr_base_java:latest -t lr_base_java:1 /vagrant/scripts/guest/docker/lr_base_java
+docker build -t lr_base_java:1 /vagrant/scripts/guest/docker/lr_base_java
+docker build -t lr_base_java:latest -t lr_base_java:2 /vagrant/scripts/guest/docker/lr_base_java2
 
 docker build -t lr_base_ruby:latest -t lr_base_ruby:1 /vagrant/scripts/guest/docker/lr_base_ruby
 
