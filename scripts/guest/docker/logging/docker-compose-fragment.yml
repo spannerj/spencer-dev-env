@@ -2,13 +2,19 @@ version: '2'
 services:
   elasticsearch-logs:
     container_name: elasticsearch-logs
-    image: elasticsearch:5.2.0-alpine
-    environment:
-      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    build: /vagrant/scripts/guest/docker/logging/elasticsearch-logs
     ports:
       - "9201:9200"
       - "9301:9300"
-  
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
   logstash:
     container_name: logstash
     build: /vagrant/scripts/guest/docker/logging/logstash
