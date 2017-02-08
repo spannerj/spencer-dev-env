@@ -7,6 +7,8 @@
 * Fixed DB2 provisioning issue if init SQL file has strict permissions
 * Allow machine to (eventually) start successfully even if internet is down (#34)
 * Update kernel and guest additions during provisioning/first up
+* More ELK stack memory optimisations
+* Added `livelogs` alias, which allows you to see the logs of a given app as they occur in your console, even if they are also going to ELK.
 
 ## 1.3.1.2
 
