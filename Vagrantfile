@@ -66,7 +66,7 @@ end
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
-  this_version = "1.3.2"
+  this_version = "1.4.0"
   puts colorize_lightblue("This is a universal dev env (version #{this_version})")
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
@@ -187,11 +187,18 @@ Vagrant.configure(2) do |config|
     config.persistent_storage.mountpoint = '/var/lib/docker'
   end
 
-  # If provisioning, delete commodities list as all containers will need reprovisioning from scratch
-  if !(['provision', '--provision'] & ARGV).empty?
+  # If provisioning (or upping for the first time)
+  if !(['provision', '--provision'] & ARGV).empty? || !File.exist?(root_loc + "/.vagrant/machines/default/virtualbox/action_provision")
+    do_kernel_additions_updates = true  # So we can do kernel update below
+    # Delete commodities list as all containers will need reprovisioning from scratch
     if File.exists?(root_loc + '/.commodities.yml')
       File.delete(root_loc + '/.commodities.yml')
     end
+  elsif quick_reload
+    # If we have quick-reloaded, also set this to true so we can do guest additions update after a kernel update
+    do_kernel_additions_updates = true
+  else
+    do_kernel_additions_updates = false
   end
 
   # Only if vagrant up/resume do we want to create dev-env configuration
@@ -299,28 +306,32 @@ Vagrant.configure(2) do |config|
 
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume, :reload] do
-    # We want up to date kernel to ensure maximum compatibility with advanced docker features like overlayfs
-    puts colorize_lightblue("Updating Linux Kernel")
-    if system "vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel.sh\""
-      # If nonzero exit code, kernel must have updated
-      puts colorize_yellow("Linux Kernel has been updated.")
-      puts colorize_yellow("Please restart your machine (vagrant reload)")
-      File.write(QUICK_RELOAD_FILE, "Hi")
-      exit
-    else
-      puts colorize_green("Kernel is up to date")
-    end
+    # We only want to do the kernel/additions if provisioning, but we can't do them AS provisions because the reboots
+    # would then count as finishing provisioning. Instead we do it in this trigger, but check the var we set earlier
+    if do_kernel_additions_updates
+      # We want up to date kernel to ensure maximum compatibility with advanced docker features like overlayfs
+      puts colorize_lightblue("Updating Linux Kernel")
+      if system "vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel.sh\""
+        # If nonzero exit code, kernel must have updated
+        puts colorize_yellow("Linux Kernel has been updated.")
+        puts colorize_yellow("Please restart the machine (vagrant reload)")
+        File.write(QUICK_RELOAD_FILE, "Hi")
+        exit
+      else
+        puts colorize_green("Kernel is up to date")
+      end
 
-    # Before we start the heavy lifting, update guest additions if necessary.
-    puts colorize_lightblue("Updating VirtualBox Guest Additions")
-    if system "vagrant ssh -c \"source /vagrant/scripts/guest/setup-vboxguest.sh\""
-      # If nonzero exit code, additions must have updated
-      puts colorize_yellow("VirtualBox Guest Additions have been updated.")
-      puts colorize_yellow("Please restart your machine (vagrant reload)")
-      File.write(QUICK_RELOAD_FILE, "Hi")
-      exit
-    else
-      puts colorize_green("VirtualBox Guest Additions is up to date")
+      # Before we start the heavy lifting, update guest additions if necessary.
+      puts colorize_lightblue("Updating VirtualBox Guest Additions")
+      if system "vagrant ssh -c \"source /vagrant/scripts/guest/setup-vboxguest.sh\""
+        # If nonzero exit code, additions must have updated
+        puts colorize_yellow("VirtualBox Guest Additions have been updated.")
+        puts colorize_yellow("Please restart the machine (vagrant reload)")
+        File.write(QUICK_RELOAD_FILE, "Hi")
+        exit
+      else
+        puts colorize_green("VirtualBox Guest Additions is up to date")
+      end
     end
 
     # Call the ruby function to create the docker compose file containing the apps and their commodities

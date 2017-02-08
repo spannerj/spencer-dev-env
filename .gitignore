@@ -1,6 +1,7 @@
 .vagrant/
 .dev-env-context
 .update-check-context
+.quick-reload
 dev-env-project/
 .DS_Store
 apps/

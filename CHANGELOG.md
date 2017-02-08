@@ -1,11 +1,17 @@
 # Changelog
 
-## v1.3.2
+## v1.4.0
 
 * Changed Python from a custom LR build to IUS Community Project in all Python base images. We did not create a version 3 of the dockerfiles as it is important to catch (unlikely) compatibility issues now rather than when your apps hit Integration
 * Updated Gradle to 3.3 in base Java image
 * Fixed DB2 provisioning issue if init SQL file has strict permissions
 * Allow machine to (eventually) start successfully even if internet is down (#34)
+* Update kernel and guest additions during provisioning/first up
+
+## 1.3.1.2
+
+* Reduced elasticsearch-logs memory usage to 256m from 1g
+* Introduced new v2 base java Dockerfile with more memory-efficient CMD for apps that use shadowjar plugin
 
 ## 1.3.1.1
 
