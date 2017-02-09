@@ -177,7 +177,8 @@ status                                           -     view the status of all ru
 stop <name of container>                         -     stop a container
 start <name of container>                        -     start a container
 restart <name of container>                      -     restart a container
-logs <name of container>                         -     view the logs of a container
+logs <name of container>                         -     view the logs of a container (from the past)
+livelogs <name of container>                     -     view the logs of a container (as they happen)
 exec <name of container> <command to execute>    -     execute a command in a running container
 run <options> <name of container> <command>      -     creates a new container and runs the command in it.
 remove <name of container>                       -     remove a container
