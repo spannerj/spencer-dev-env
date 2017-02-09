@@ -68,7 +68,7 @@ if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
   # Skip version check if not on master (prevents infinite loops if you're in a branch that isn't up to date with the latest release code yet)
   current_branch = `git -C #{root_loc} rev-parse --abbrev-ref HEAD`.strip
   if current_branch == "master"
-    self_update(root_loc)
+    self_update(root_loc, this_version)
   else
     puts colorize_yellow("*******************************************************")
     puts colorize_yellow("**                                                   **")
@@ -287,7 +287,12 @@ Vagrant.configure(2) do |config|
 
     # The images were built and containers created earlier. Now that commodities are all provisioned, we can start the containers
     if File.size(root_loc + '/.docker-compose-file-list') != 0
-      puts colorize_lightblue("Starting containers")
+      # Start ELK first to get it out the way before the big memory hit
+      if is_commodity?(root_loc, "logging")
+        puts colorize_lightblue("Starting ELK stack...")
+        system "vagrant ssh -c \"docker-compose up --no-build -d logstash elasticsearch-logs kibana\""
+      end
+      puts colorize_lightblue("Starting containers...")
       system "vagrant ssh -c \"docker-compose up --no-build -d \""
     else
       puts colorize_yellow("No containers to start.")

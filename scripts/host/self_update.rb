@@ -5,7 +5,7 @@ require "net/http"
 require "rubygems"
 require "uri"
 
-def self_update(root_loc)
+def self_update(root_loc, this_version)
   # Check for new version (using a snippet)
   versioncheck_uri = URI.parse("http://192.168.249.38/common/dev-env/snippets/12/raw")
   http = Net::HTTP.new(versioncheck_uri.host, versioncheck_uri.port)
