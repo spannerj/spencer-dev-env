@@ -8,20 +8,20 @@ FROM lr_base_python:2
 
 # Port for gunicorn
 # Default to 8080, docker-compose can change this to the reserved port for this app
-ENV PORT 8080
-
+ENV PORT=8080 \
+  \
 # Set commit (for the health route) to be local for development
-ENV COMMIT LOCAL
-
+  COMMIT=LOCAL \
+  \
 # Added this environment variable so that pytest can import the application package.
-ENV PYTHONPATH /src
-
+  PYTHONPATH=/src \
+  \
 # Disables sendfile in gunicorn to work around a caching bug with vagrant shared folders
-ENV SENDFILE 0
-
+  SENDFILE=0 \
+  \
 # If imported into your config, Flask will not cache jinja html template files.
 # Best set to false in non-development regions though.
-ENV TEMPLATES_AUTO_RELOAD true
+  TEMPLATES_AUTO_RELOAD=true
 
 WORKDIR /src
 
