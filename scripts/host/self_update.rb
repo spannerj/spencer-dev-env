@@ -23,16 +23,16 @@ def self_update(root_loc)
         puts ""
         # Have we already asked the user to update today?
         ask_update = true
-        UPDATE_CHECK_CONTEXT_FILE = root_loc + "/.update-check-context"
-        if File.exists?(UPDATE_CHECK_CONTEXT_FILE)
-          parsed_date = Date.strptime(File.read(UPDATE_CHECK_CONTEXT_FILE), '%Y-%m-%d')
+        update_check_file = root_loc + "/.update-check-context"
+        if File.exists?(update_check_file)
+          parsed_date = Date.strptime(File.read(update_check_file), '%Y-%m-%d')
           if Date.today == parsed_date
             puts colorize_yellow("You've already said you don't want to update today, so I won't ask again. To update manually, run git pull.")
             puts ""
             ask_update = false
           else
             # We have not asked today yet, delete the file
-            File.delete(UPDATE_CHECK_CONTEXT_FILE)
+            File.delete(update_check_file)
           end
         end
         if ask_update
@@ -59,7 +59,7 @@ def self_update(root_loc)
             puts colorize_yellow("Okay. I'll ask again tomorrow. If you want to update in the meantime, simply run git pull yourself.'")
             puts colorize_yellow("Continuing in 5 seconds...")
             puts ""
-            File.write(UPDATE_CHECK_CONTEXT_FILE, Date.today.to_s)
+            File.write(update_check_file, Date.today.to_s)
             sleep(5)
           end
         end
