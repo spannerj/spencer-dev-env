@@ -22,12 +22,10 @@ def provision_adfs(root_loc)
                         host_additions.push(entry)  # Must be in the form <IP Address><Space><Domain Name> e.g "127.0.0.1 ThisGoesToLocalHost"
                     end
                 end
-            else
-                puts colorize_yellow("#{appname} said it required adfs but provided no adfs fragment.")
             end
-        
-    end
+        end
 end
+
     
     # Now modify the host's file according to OS
     hosts_file = nil
