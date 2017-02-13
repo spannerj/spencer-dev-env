@@ -25,7 +25,9 @@ def provision_adfs(root_loc)
             else
                 puts colorize_yellow("#{appname} said it required adfs but provided no adfs fragment.")
             end
+        
     end
+end
     
     # Now modify the host's file according to OS
     hosts_file = nil
