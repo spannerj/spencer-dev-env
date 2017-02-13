@@ -22,8 +22,6 @@ def provision_adfs(root_loc)
                         host_additions.push(entry)  # Must be in the form <IP Address><Space><Domain Name> e.g "127.0.0.1 ThisGoesToLocalHost"
                     end
                 end
-                # Set status of the commodity
-                set_commodity_provision_status(root_loc, "#{appname}", "adfs", true)
             else
                 puts colorize_yellow("#{appname} said it required adfs but provided no adfs fragment.")
             end
