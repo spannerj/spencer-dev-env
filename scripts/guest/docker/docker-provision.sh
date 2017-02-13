@@ -1,3 +1,6 @@
+# Needed for Elasticsearch 5.0 docker to run
+sudo sysctl -w vm.max_map_count=262144 > /dev/null 2>&1
+
 echo "- - - Building base docker python images - - -"
 # If these haven't changed, the cache should be used and no app images will rebuild. Hopefully.
 # We need a latest tag for the apps that don't specify a version (yet) as well
@@ -10,6 +13,11 @@ docker build -t lr_base_java:1 /vagrant/scripts/guest/docker/lr_base_java
 docker build -t lr_base_java:latest -t lr_base_java:2 /vagrant/scripts/guest/docker/lr_base_java2
 
 docker build -t lr_base_ruby:latest -t lr_base_ruby:1 /vagrant/scripts/guest/docker/lr_base_ruby
+
+# Restart docker service to reduce memory usage after doing all that building
+echo "- - - Restarting Docker service - - -"
+sudo service docker stop
+sudo service docker start
 
 # Got to use a constant project name to ensure that containers are properly tracked regardless of how fragments are added are removed. Otherwise you get duplicate errors on the build
 export COMPOSE_PROJECT_NAME=dv
@@ -39,6 +47,11 @@ if ! [ -z "$COMPOSE_FILE" ]; then
     docker network create dv_default
   fi
 
+  # Restart docker service to reduce memory usage after doing all that building
+  echo "- - - Restarting Docker service - - -"
+  sudo service docker stop
+  sudo service docker start
+
   echo "- - - (Re)creating docker containers - - -"
   /usr/local/bin/docker-compose create --no-build
   # If the exit code of the create command was not 0 (i.e. it failed) then bomb out of the whole process here so it's obvious to the user where an image failed to build
@@ -53,6 +66,3 @@ images=$(docker images -f "dangling=true" -q)
 if [ -n "$images" ]; then
   docker rmi -f $images
 fi
-
-# Needed for Elasticsearch 5.0 docker to run
-sudo sysctl -w vm.max_map_count=262144 > /dev/null 2>&1
