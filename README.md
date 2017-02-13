@@ -158,7 +158,7 @@ Important - if your app is adding itself as a proxied location{} behind nginx, n
 
 #### `/fragments/host-fragments.yml` (adfs)
 
-This file forms part of an nginx configration file. It will be included within the server directive of the main configuration file; requests to the second address shall be forwarded to the first address.
+This file contains details of hosts to be forwarded; requests to the second address shall be forwarded to the first address.
 
 [Example](http://192.168.249.38/common/dev-env/snippets/15)
 
