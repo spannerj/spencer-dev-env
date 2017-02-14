@@ -1,10 +1,10 @@
 require_relative 'utilities'
 
-# Public: Provision the host's hosts file for adfs usage.
+# Public: Provision the host's hosts file.
 #
 # root_loc - The root location of the development environment.
 #
-def provision_adfs(root_loc)
+def provision_hosts(root_loc)
     require 'yaml'
     host_additions = [] # Holds a list of hosts file entries
 
@@ -14,7 +14,7 @@ def provision_adfs(root_loc)
         config["applications"].each do |appname, appconfig|
             # Check adfs is required
             if File.exists?("#{root_loc}/apps/#{appname}/fragments/host-fragments.yml")
-                puts colorize_pink("Found an ADFS provision for #{appname}")
+                puts colorize_pink("Found a Hosts provision for #{appname}")
                 # Allow each app to ammend more than one line to the file.
                 hosts = YAML.load_file("#{root_loc}/apps/#{appname}/fragments/host-fragments.yml")
                 hosts["hosts"].each do |entry|

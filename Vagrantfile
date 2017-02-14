@@ -14,7 +14,7 @@ require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
 require_relative 'scripts/host/supporting_files'
-require_relative 'scripts/host/adfs_provision'
+require_relative 'scripts/host/hosts_provision'
 require 'fileutils'
 require "rubygems"
 require "json"
@@ -306,8 +306,8 @@ Vagrant.configure(2) do |config|
     provision_postgres(root_loc)
     # Alembic
     provision_alembic(root_loc)
-    # ADFS (Hosts File)
-    provision_adfs(root_loc)
+    # Hosts File
+    provision_hosts(root_loc)
     # Run app DB2 SQL statements
     provision_db2(root_loc)
     # Elasticsearch
