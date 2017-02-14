@@ -16,6 +16,7 @@ services:
     mem_limit: 450m
     cap_add:
       - IPC_LOCK
+    restart: on-failure
   logstash:
     container_name: logstash
     build: /vagrant/scripts/guest/docker/logging/logstash
@@ -26,6 +27,7 @@ services:
       - elasticsearch-logs
     ports:
       - "25826:25826"
+    restart: on-failure
     
   kibana:
     container_name: kibana
@@ -36,3 +38,4 @@ services:
       - elasticsearch-logs
     environment:
       ELASTICSEARCH_URL: http://elasticsearch-logs:9200
+    restart: on-failure

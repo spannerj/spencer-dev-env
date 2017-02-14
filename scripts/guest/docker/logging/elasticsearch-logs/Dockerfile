@@ -1,10 +1,8 @@
-FROM elasticsearch:5.2.0-alpine
+FROM elasticsearch:5.2.0
 
 ENV ES_JAVA_OPTS -Xms256m -Xmx256m
 
 # Remove default heap size and add low-memory optimisations
-RUN sed -i -e 's/.*Xmx2g.*//' /usr/share/elasticsearch/config/jvm.options && \
- sed -i -e 's/.*Xms2g.*//' /usr/share/elasticsearch/config/jvm.options && \
- echo "bootstrap.memory_lock: true" >> /usr/share/elasticsearch/config/elasticsearch.yml && \
+RUN echo "bootstrap.memory_lock: true" >> /usr/share/elasticsearch/config/elasticsearch.yml && \
  echo "indices.fielddata.cache.size: 50%" >> /usr/share/elasticsearch/config/elasticsearch.yml && \
  echo "indices.memory.index_buffer_size: 50%" >> /usr/share/elasticsearch/config/elasticsearch.yml
