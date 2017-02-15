@@ -141,6 +141,7 @@ Vagrant.configure(2) do |config|
   if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
     # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
     if File.exists?(DEV_ENV_CONTEXT_FILE)
+      puts ""
       puts colorize_green("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
     else
       print colorize_yellow("Please enter the url of your dev env repo (SSH): ")
@@ -174,6 +175,7 @@ Vagrant.configure(2) do |config|
 
     # If they have made an ELK stack choice already, say so
     if File.exists?(LOGGING_CHOICE_FILE)
+      puts ""
       if (File.read(LOGGING_CHOICE_FILE) == 'full')
         puts colorize_lightblue("This dev-env is running the full ELK stack. Increasing memory to #{vm_memory}mb")
       else
@@ -181,6 +183,7 @@ Vagrant.configure(2) do |config|
       end
     else
       # Otherwise ask if they'd like to run the full ELK stack
+      puts ""
       print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? This is quite memory intensive, so I will add an extra 1.5gb of memory onto the configured amount (#{vm_memory}mb) if you say yes! Logs can always be found in /logs/log.txt. (y/n) ")
       confirm = STDIN.gets.chomp
       until confirm.upcase.start_with?('Y', 'N')
@@ -331,9 +334,9 @@ Vagrant.configure(2) do |config|
         puts colorize_lightblue("Starting ELK stack...")
         # Start the bits of ELK they have asked for
         if File.read(LOGGING_CHOICE_FILE) == 'lite'
-          system "vagrant ssh -c \"docker-compose up --no-build -d logstash\""
+          system "vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash\""
         else
-          system "vagrant ssh -c \"docker-compose up --no-build -d logstash elasticsearch-logs kibana\""
+          system "vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash elasticsearch-logs kibana\""
         end
       end
       puts colorize_lightblue("Starting containers...")
