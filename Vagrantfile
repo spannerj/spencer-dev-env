@@ -94,6 +94,10 @@ end
 # As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
 DEV_ENV_CONTEXT_FILE = root_loc + "/.dev-env-context"
 
+LOGGING_CHOICE_FILE = root_loc + "/.log-choice"
+
+vm_memory = ENV['VM_MEMORY'].to_i || 4096
+
 Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
   config.vm.box_version      = "0.5.0"
@@ -116,10 +120,15 @@ Vagrant.configure(2) do |config|
 
   # If provisioning (or upping for the first time)
   if !(['provision', '--provision'] & ARGV).empty? || !File.exist?(root_loc + "/.vagrant/machines/default/virtualbox/action_provision")
+    puts colorize_yellow("Provision detected - resetting commodities amd logging choice")
     do_kernel_additions_updates = true  # So we can do kernel update below
     # Delete commodities list as all containers will need reprovisioning from scratch
     if File.exists?(root_loc + '/.commodities.yml')
       File.delete(root_loc + '/.commodities.yml')
+    end
+    # Allow them to make the logging choice again
+    if File.exists?(LOGGING_CHOICE_FILE)
+      File.delete(LOGGING_CHOICE_FILE)
     end
   elsif quick_reload
     # If we have quick-reloaded, also set this to true so we can do guest additions update after a kernel update
@@ -163,6 +172,29 @@ Vagrant.configure(2) do |config|
       sleep(10)
     end
 
+    # If they have made an ELK stack choice already, say so
+    if File.exists?(LOGGING_CHOICE_FILE)
+      if (File.read(LOGGING_CHOICE_FILE) == 'full')
+        puts colorize_lightblue("This dev-env is running the full ELK stack. Increasing memory to #{vm_memory}mb")
+      else
+        puts colorize_yellow("This dev-env is not running the full ELK stack.")
+      end
+    else
+      # Otherwise ask if they'd like to run the full ELK stack
+      print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? This is quite memory intensive, so I will add an extra 1.5gb of memory onto the configured amount (#{vm_memory}mb) if you say yes! Logs can always be found in /logs/log.txt. (y/n) ")
+      confirm = STDIN.gets.chomp
+      until confirm.upcase.start_with?('Y', 'N')
+        print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? This is quite memory intensive, so I will add an extra 1.5gb of memory onto the configured amount (#{vm_memory}mb) if you say yes! Logs can always be found in /logs/log.txt. (y/n) ")
+        confirm = STDIN.gets.chomp
+      end
+      # Save their choice for future ups
+      if confirm.upcase.start_with?('Y')
+        File.open(LOGGING_CHOICE_FILE, "w+") { |file| file.write("full") }
+      else
+        File.open(LOGGING_CHOICE_FILE, "w+") { |file| file.write("lite") }
+      end
+    end
+
     # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
     puts colorize_lightblue("Updating apps:")
     update_apps(root_loc)
@@ -180,6 +212,10 @@ Vagrant.configure(2) do |config|
     # Find the ports of the apps and commodities on the host and add port forwards for them
     create_port_forwards(root_loc, config)
   end
+
+  # If they have made an ELK stack choice already, increase the memory use variable
+  # We do it here instead of the bit above where we ask them, in case that bit doesn't get run.
+  vm_memory += 1536 if File.read(LOGGING_CHOICE_FILE) == 'full'
 
   # In the event of user requesting a vagrant destroy
   config.trigger.before :destroy do
@@ -203,6 +239,9 @@ Vagrant.configure(2) do |config|
     end
     if File.exists?(QUICK_RELOAD_FILE)
       File.delete(QUICK_RELOAD_FILE)
+    end
+    if File.exists?(LOGGING_CHOICE_FILE)
+      File.delete(LOGGING_CHOICE_FILE)
     end
   end
 
@@ -290,7 +329,12 @@ Vagrant.configure(2) do |config|
       # Start ELK first to get it out the way before the big memory hit
       if is_commodity?(root_loc, "logging")
         puts colorize_lightblue("Starting ELK stack...")
-        system "vagrant ssh -c \"docker-compose up --no-build -d logstash elasticsearch-logs kibana\""
+        # Start the bits of ELK they have asked for
+        if File.read(LOGGING_CHOICE_FILE) == 'lite'
+          system "vagrant ssh -c \"docker-compose up --no-build -d logstash\""
+        else
+          system "vagrant ssh -c \"docker-compose up --no-build -d logstash elasticsearch-logs kibana\""
+        end
       end
       puts colorize_lightblue("Starting containers...")
       system "vagrant ssh -c \"docker-compose up --no-build -d \""
@@ -311,7 +355,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |vb|
   # Set a random name to avoid a folder-already-exists error after a destroy/up (virtualbox often leaves the folder lying around)
     vb.name = "landregistry-development #{Time.now.to_f}"
-    vb.customize ['modifyvm', :id, '--memory', ENV['VM_MEMORY'] || 4096]
+    vb.customize ['modifyvm', :id, '--memory', vm_memory]
     vb.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
     vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
     vb.customize ["modifyvm", :id, "--cpus", ENV['VM_CPUS'] || 4]

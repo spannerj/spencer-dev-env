@@ -13,3 +13,5 @@ docker_storage.vdi
 mpapis.asc
 logstash*.log
 adfs_Dev.crt
+logs/
+.log-choice
