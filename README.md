@@ -16,7 +16,7 @@ It provides several hooks for applications to take advantage of, including:
 ## Software
 
 * [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0.14+)
-* [Vagrant](https://www.vagrantup.com/) (v1.8+))
+* [Vagrant](https://www.vagrantup.com/) (v1.8+ but NOT 1.8.5))
   * Make sure you do **not** have the vagrant-vbguest plugin installed. Any plugins the environment needs will be installed automatically.
 * **_Windows users only_** [Git For Windows](http://git-for-windows.github.io) (download the portable zip version to get around any admin requirements) All the instructions in this README assume that you will be using Git Bash/MINGW64 which comes as part of this. It gives you a Unix-like shell and commands which make life much easier. While this software is technically optional, getting everything to work in the normal Windows command line is not covered here.
 
@@ -162,11 +162,11 @@ Important - if your app is adding itself as a proxied location{} behind nginx, n
 
 An ELK stack is created if any application requests the "logging" commodity. It will capture the output of any containers that are configured (via their docker-compose-fragment) to forward their messages to logstash via syslog.
 
-Once some logs have been, well, logged, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it!
+Because the full stack is quite memory intensive, you will be asked during provisioning if you want to run it. If you choose yes, then an extra 1.5gb of memory will be allocated to the machine over and above what is configured. If you choose no, then only Logstash will be activated. In either case, logs will also be forward to logs/log.txt for viewing outside of Kibana.
 
-There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page.
+If running the full stack, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it! 
 
-To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
+There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page. To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
 
 # Useful commands
 

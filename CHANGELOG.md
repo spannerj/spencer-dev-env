@@ -2,12 +2,12 @@
 
 ## v1.4.0
 
-* Changed Python from a custom LR build to IUS Community Project in all Python base images. We did not create a version 3 of the dockerfiles as it is important to catch (unlikely) compatibility issues now rather than when your apps hit Integration
-* Updated Gradle to 3.3 in base Java image
+* MAJOR - Due to memory issues when running many apps, the full ELK stack is now optional, via a question asked during provision. Extra memory will be allocated to the machine if it is chosen. Whether you run the stack or not, logs now also write to logs/log.txt for Kibana-less viewing
+* MAJOR - Changed Python from a custom LR build to one provided by the IUS Community Project in all Python base images
+* Updated Gradle to 3.3 in base Java images
 * Fixed DB2 provisioning issue if init SQL file has strict permissions
 * Allow machine to (eventually) start successfully even if internet is down (#34)
-* Update kernel and guest additions during provisioning/first up
-* More ELK stack memory optimisations
+* Update kernel and guest additions to the latest versions during provisioning/first up
 * Added `livelogs` alias, which allows you to see the logs of a given app as they occur in your console, even if they are also going to ELK.
 
 ## 1.3.1.2
