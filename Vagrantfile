@@ -96,7 +96,11 @@ DEV_ENV_CONTEXT_FILE = root_loc + "/.dev-env-context"
 
 LOGGING_CHOICE_FILE = root_loc + "/.log-choice"
 
-vm_memory = ENV['VM_MEMORY'].to_i || 4096
+if ENV.has_key?('VM_MEMORY')
+  vm_memory = ENV['VM_MEMORY'].to_i
+else
+  vm_memory = 4096
+end
 
 Vagrant.configure(2) do |config|
   config.vm.box              = "landregistry/centos"
