@@ -1,4 +1,4 @@
-FROM logstash:5.2.0-alpine
+FROM logstash:5.2.0
 
 # We use this filter to check the parsed message
 RUN logstash-plugin install logstash-filter-multiline
