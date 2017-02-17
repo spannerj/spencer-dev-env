@@ -25,26 +25,28 @@ def provision_hosts(root_loc)
                 end
             end
         end
-end
+    end
 
     
     # Now modify the host's file according to OS
     hosts_file = nil
-    puts colorize_lightblue("Additions: #{host_additions}")
-    if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
-        # WINDOWS
-        hosts_file = "C:/Windows/System32/drivers/etc/hosts"
-    else
-        # LINUX or MAC OS (NOT TESTED)
-        hosts_file = "/etc/hosts"
-    end
-
-    file = File.readlines(hosts_file)
-    host_additions.each do |s|
-        if file.grep(s).any?
-            puts colorize_yellow("Host already has entry: #{s}")
+    if !host_additions.empty?
+        puts colorize_lightblue("Additions: #{host_additions}")
+        if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+            # WINDOWS
+            hosts_file = "C:/Windows/System32/drivers/etc/hosts"
         else
-            File.write(hosts_file, "\n" + s, mode: 'a')
+            # LINUX or MAC OS (NOT TESTED)
+            hosts_file = "/etc/hosts"
+        end
+
+        file = File.read(hosts_file)
+        host_additions.each do |s|
+            if file.include? s
+                puts colorize_yellow("Host already has entry: #{s}")
+            else
+                File.write(hosts_file, "\n" + s, mode: 'a')
+            end
         end
     end
 end

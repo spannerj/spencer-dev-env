@@ -180,12 +180,12 @@ Vagrant.configure(2) do |config|
 
     # If they have made an ELK stack choice already, say so
     if File.exists?(LOGGING_CHOICE_FILE)
-      puts ""
       if (File.read(LOGGING_CHOICE_FILE) == 'full')
         puts colorize_lightblue("This dev-env is running the full ELK stack. Increasing memory to #{vm_memory}mb")
       else
         puts colorize_yellow("This dev-env is not running the full ELK stack.")
       end
+      puts ""
     else
       # Otherwise ask if they'd like to run the full ELK stack
       puts ""
