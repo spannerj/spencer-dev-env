@@ -5,6 +5,7 @@ require_relative 'utilities'
 # root_loc - The root location of the development environment.
 #
 def provision_hosts(root_loc)
+    puts colorize_lightblue("Searching for host file updates")
     require 'yaml'
     host_additions = [] # Holds a list of hosts file entries
 
