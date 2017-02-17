@@ -14,6 +14,7 @@ require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
 require_relative 'scripts/host/supporting_files'
+require_relative 'scripts/host/hosts_provision'
 require_relative 'scripts/host/self_update'
 require 'fileutils'
 
@@ -324,12 +325,15 @@ Vagrant.configure(2) do |config|
     provision_postgres(root_loc)
     # Alembic
     provision_alembic(root_loc)
+    # Hosts File
+    provision_hosts(root_loc)
     # Run app DB2 SQL statements
     provision_db2(root_loc)
     # Elasticsearch
     provision_elasticsearch(root_loc)
     # Nginx
     provision_nginx(root_loc)
+
 
     # The images were built and containers created earlier. Now that commodities are all provisioned, we can start the containers
     if File.size(root_loc + '/.docker-compose-file-list') != 0
