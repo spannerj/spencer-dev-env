@@ -102,7 +102,7 @@ If this file exists, it will be used to construct the container (after building 
 
 This is the file that contructs the application container image. The standard rules are:
 
-* There are base images provided that the app should extend (lr_base_python, lr_base_python_flask and lr_base_java - they have their own Dockerfiles in this repo that can be inspected if you wish to learn more about what they provide for you (for example, Flask provides a default command that runs gunicorn), but in general you can use the examples and just change the app-specific section to set variables and install any extra software via yum.
+* There are [base images](192.168.249.38/common/dev-env-base-images) that the app can extend (lr_base_python, lr_base_python_flask, lr_base_java and lr_base_ruby - they have their own Dockerfiles that can be inspected if you wish to learn more about what they provide for you (for example, Flask provides a default command that runs gunicorn), but in general you can use the examples and just change the app-specific section to set variables and install any extra software via yum.
 * Any environment variables that need to change to make it work within Docker over and above the application defaults (usually variables that require hostnames) should be specified.
 * If there is a port environment variable, set it to 8080 (so that the docker-compose fragments are more consistent in their mappings)
 
@@ -168,6 +168,7 @@ If running the full stack, you can visit http://localhost:15601/ on your host ma
 
 There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page. To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
 
+
 # Useful commands
 
 If you hate typing long commands then the commands below have been added to the dev-env for you:
@@ -212,5 +213,6 @@ For those who get bored typing docker-compose you can use the alias dc instead. 
 In order to interact with breakpoints that you add to your applications you need to run the container in the foreground and attach to the container terminal. You do that like so:
 
 ```bash
+docker-compose stop <name of container>
 docker-compose run --rm --service-ports <name of container>
 ```

@@ -1,9 +1,10 @@
 # Changelog
 
-## v1.4.0
+## v2.0.0
 
 * MAJOR - Due to memory issues when running many apps, the full ELK stack is now optional, via a question asked during provision. Extra memory will be allocated to the machine if it is chosen. Whether you run the stack or not, logs now also write to logs/log.txt for Kibana-less viewing
-* MAJOR - Changed Python from a custom LR build to one provided by the IUS Community Project in all Python base images
+* MAJOR - All base images are now prebuilt and stored on Docker Hub, pulled down during vagrant up. The Dockerfiles are now stored in their own repo.
+* Changed Python from a custom LR build to one provided by the IUS Community Project in all Python base images, to match changes made by webops
 * Updated Gradle to 3.3 in base Java images
 * Fixed DB2 provisioning issue if init SQL file has strict permissions
 * Allow machine to (eventually) start successfully even if internet is down (#34)

@@ -1,23 +1,41 @@
 # Needed for Elasticsearch 5.0 docker to run
 sudo sysctl -w vm.max_map_count=262144 > /dev/null 2>&1
 
-echo "- - - Building base docker python images - - -"
+echo "- - - Pulling base docker python images - - -"
 # If these haven't changed, the cache should be used and no app images will rebuild. Hopefully.
+
+# Build and push commands to run after updating the Dockerfile(s) are contained in http://192.168.249.38/common/dev-env/snippets/10
+
 # We need a latest tag for the apps that don't specify a version (yet) as well
-docker build -t lr_base_python:1 /vagrant/scripts/guest/docker/lr_base_python
-docker build -t lr_base_python_flask:1 /vagrant/scripts/guest/docker/lr_base_python/flask
-docker build -t lr_base_python:latest -t lr_base_python:2 /vagrant/scripts/guest/docker/lr_base_python2
-docker build -t lr_base_python_flask:latest -t lr_base_python_flask:2 /vagrant/scripts/guest/docker/lr_base_python2/flask2
 
-docker build -t lr_base_java:1 /vagrant/scripts/guest/docker/lr_base_java
-docker build -t lr_base_java:latest -t lr_base_java:2 /vagrant/scripts/guest/docker/lr_base_java2
+# Python
+docker pull --all-tags hmlandregistry/dev_base_python
+# Retag for apps to use in their FROM
+docker tag hmlandregistry/dev_base_python:latest lr_base_python:latest
+docker tag hmlandregistry/dev_base_python:1 lr_base_python:1
+docker tag hmlandregistry/dev_base_python:2 lr_base_python:2
 
-docker build -t lr_base_ruby:latest -t lr_base_ruby:1 /vagrant/scripts/guest/docker/lr_base_ruby
+# Flask (extends Python)
+docker pull --all-tags hmlandregistry/dev_base_python_flask
+# Retag for apps to use in their FROM
+docker tag hmlandregistry/dev_base_python_flask:latest lr_base_python_flask:latest
+docker tag hmlandregistry/dev_base_python_flask:1 lr_base_python_flask:1
+docker tag hmlandregistry/dev_base_python_flask:2 lr_base_python_flask:2
 
-# Restart docker service to reduce memory usage after doing all that building
-echo "- - - Restarting Docker service - - -"
-sudo service docker stop
-sudo service docker start
+# Java
+docker pull --all-tags hmlandregistry/dev_base_java
+# Retag for apps to use in their FROM
+docker tag hmlandregistry/dev_base_java:latest lr_base_java:latest
+docker tag hmlandregistry/dev_base_java:1 lr_base_java:1
+docker tag hmlandregistry/dev_base_java:2 lr_base_java:2
+
+
+# Ruby
+docker pull --all-tags hmlandregistry/dev_base_ruby
+# Retag for apps to use in their FROM
+docker tag hmlandregistry/dev_base_ruby:latest lr_base_ruby:latest
+docker tag hmlandregistry/dev_base_ruby:1 lr_base_ruby:1
+
 
 # Got to use a constant project name to ensure that containers are properly tracked regardless of how fragments are added are removed. Otherwise you get duplicate errors on the build
 export COMPOSE_PROJECT_NAME=dv
@@ -46,11 +64,6 @@ if ! [ -z "$COMPOSE_FILE" ]; then
   else
     docker network create dv_default
   fi
-
-  # Restart docker service to reduce memory usage after doing all that building
-  echo "- - - Restarting Docker service - - -"
-  sudo service docker stop
-  sudo service docker start
 
   echo "- - - (Re)creating docker containers - - -"
   /usr/local/bin/docker-compose create --no-build
