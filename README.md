@@ -164,7 +164,7 @@ An ELK stack is created if any application requests the "logging" commodity. It 
 
 Because the full stack is quite memory intensive, you will be asked during provisioning if you want to run it. If you choose yes, then an extra 1.5gb of memory will be allocated to the machine over and above what is configured. If you choose no, then only Logstash will be activated. In either case, logs will also be forward to logs/log.txt for viewing outside of Kibana.
 
-If running the full stack, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it! 
+If running the full stack, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it!
 
 There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page. To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
 
@@ -214,3 +214,10 @@ In order to interact with breakpoints that you add to your applications you need
 ```bash
 docker-compose run --rm --service-ports <name of container>
 ```
+
+## Hints and Tips
+* Make sure you are on the *master* branch. Develop is most likely unstable.
+* The first vagrant up after a destroy might have issues if you have a large number of apps. If it dies complaining about "cannot allocate memory", just reload and it will likely sort itself out.
+* By default it gives itself 4gb of RAM but you can override this with the VM_MEMORY windows environment variable. For example, if you have a 16gb machine it's safe to double it to 8192.
+* Make sure you `vagrant halt` before rebooting or shutting down your windows machine. Not doing this is effectively like pulling the plug and will almost certainly corrupt it.
+* `vagrant destroy` should be a last resort. Try `vagrant up --provision` (or `vagrant reload --provision`, if your vm is currently running) as that will clean out your app containers and recreate them. They are most likely to be the source of any corruption.
