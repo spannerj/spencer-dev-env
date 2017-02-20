@@ -17,6 +17,7 @@ require_relative 'scripts/host/supporting_files'
 require_relative 'scripts/host/hosts_provision'
 require_relative 'scripts/host/self_update'
 require 'fileutils'
+require 'open3'
 
 # Where is this file located?
 root_loc = File.dirname(__FILE__)
@@ -123,23 +124,23 @@ Vagrant.configure(2) do |config|
     config.persistent_storage.mountpoint = '/var/lib/docker'
   end
 
+  config.trigger.before :provision do
+    puts colorize_green("LOLOLOLOLOL")
+  end
+
   # If provisioning (or upping for the first time)
   if !(['provision', '--provision'] & ARGV).empty? || !File.exist?(root_loc + "/.vagrant/machines/default/virtualbox/action_provision")
     puts colorize_yellow("Provision detected - resetting commodities amd logging choice")
-    do_kernel_additions_updates = true  # So we can do kernel update below
+    do_additions_update = true  # So we can do additions update below
     # Delete commodities list as all containers will need reprovisioning from scratch
-    if File.exists?(root_loc + '/.commodities.yml')
-      File.delete(root_loc + '/.commodities.yml')
-    end
+    File.delete(root_loc + '/.commodities.yml') if File.exists?(root_loc + '/.commodities.yml')
     # Allow them to make the logging choice again
-    if File.exists?(LOGGING_CHOICE_FILE)
-      File.delete(LOGGING_CHOICE_FILE)
-    end
+    File.delete(LOGGING_CHOICE_FILE) if File.exists?(LOGGING_CHOICE_FILE)
   elsif quick_reload
     # If we have quick-reloaded, also set this to true so we can do guest additions update after a kernel update
-    do_kernel_additions_updates = true
+    do_additions_update = true
   else
-    do_kernel_additions_updates = false
+    do_additions_update = false
   end
 
   # Only if vagrant up/resume do we want to create dev-env configuration
@@ -224,7 +225,7 @@ Vagrant.configure(2) do |config|
 
   # If they have made an ELK stack choice already, increase the memory use variable
   # We do it here instead of the bit above where we ask them, in case that bit doesn't get run.
-  vm_memory += 1536 if File.read(LOGGING_CHOICE_FILE) == 'full'
+  vm_memory += 1536 if File.exists?(LOGGING_CHOICE_FILE) && File.read(LOGGING_CHOICE_FILE) == 'full'
 
   # In the event of user requesting a vagrant destroy
   config.trigger.before :destroy do
@@ -234,24 +235,14 @@ Vagrant.configure(2) do |config|
       confirm = ask colorize_yellow("Would you like to KEEP your custom dev-env configuration files? (y/n) ")
     end
     if confirm.upcase == "N"
-      File.delete(DEV_ENV_CONTEXT_FILE)
-      if Dir.exists?(root_loc + '/dev-env-project')
-        FileUtils.rm_r root_loc + '/dev-env-project'
-      end
+      File.delete(DEV_ENV_CONTEXT_FILE) if File.exists?(DEV_ENV_CONTEXT_FILE)
+      FileUtils.rm_r root_loc + '/dev-env-project' if Dir.exists?(root_loc + '/dev-env-project')
     end
     # remove .commodities.yml created on provisioning
-    if File.exists?(root_loc + '/.commodities.yml')
-      File.delete(root_loc + '/.commodities.yml')
-    end
-    if File.exists?(root_loc + '/.docker-compose-file-list')
-      File.delete(root_loc + '/.docker-compose-file-list')
-    end
-    if File.exists?(QUICK_RELOAD_FILE)
-      File.delete(QUICK_RELOAD_FILE)
-    end
-    if File.exists?(LOGGING_CHOICE_FILE)
-      File.delete(LOGGING_CHOICE_FILE)
-    end
+    File.delete(root_loc + '/.commodities.yml') if File.exists?(root_loc + '/.commodities.yml')
+    File.delete(root_loc + '/.docker-compose-file-list') if File.exists?(root_loc + '/.docker-compose-file-list')
+    File.delete(QUICK_RELOAD_FILE) if File.exists?(QUICK_RELOAD_FILE)
+    File.delete(LOGGING_CHOICE_FILE) if File.exists?(LOGGING_CHOICE_FILE)
   end
 
   # After a destroy, try to get rid of the peristant storage file since we don't want to use it any more. Causes problems with multiple dev envs and random plugin breakage.
@@ -279,24 +270,30 @@ Vagrant.configure(2) do |config|
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
   end
 
+  # FINALLY - Update kernel
+  # We want up to date kernel to ensure maximum compatibility with advanced docker features like overlayfs
+  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/update-kernel.sh"
+
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume, :reload] do
-    # We only want to do the kernel/additions if provisioning, but we can't do them AS provisions because the reboots
-    # would then count as finishing provisioning. Instead we do it in this trigger, but check the var we set earlier
-    if do_kernel_additions_updates
-      # We want up to date kernel to ensure maximum compatibility with advanced docker features like overlayfs
-      puts colorize_lightblue("Updating Linux Kernel")
-      if system "vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel.sh\""
-        # If nonzero exit code, kernel must have updated
-        puts colorize_yellow("Linux Kernel has been updated.")
-        puts colorize_yellow("Please restart the machine (vagrant reload)")
-        File.write(QUICK_RELOAD_FILE, "Hi")
-        exit
-      else
-        puts colorize_green("Kernel is up to date")
-      end
+    # We only want to do the kernel reboot if we have to, but if we do have to, we must not let the rest of the trigger run
+    # (this time)
+    # We're using Open3 instead of system due to a weird problem where "system" stops the console redrawing until a key is pressed
+    # at the end of the vagrant provisoning steps
+    stdout, stdeerr, status = Open3.capture3("vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel-check.sh\"")
+    if stdout.include? "UPDATED"
+      # If nonzero exit code, kernel must have updated
+      puts colorize_yellow("Linux Kernel has been updated.")
+      puts colorize_yellow("Please restart the machine (vagrant reload)")
+      File.write(QUICK_RELOAD_FILE, "Hi")
+      exit
+    else
+      puts colorize_green("Linux Kernel is up to date")
+    end
 
-      # Before we start the heavy lifting, update guest additions if necessary.
+    # Same for guest additions, except it's both the install and reboot steps in here because the kernel reboot is needed first
+    # so we can't do the install in a proper provision step like we do the kernel, so we manually check if we are provisioning
+    if do_additions_update
       puts colorize_lightblue("Updating VirtualBox Guest Additions")
       if system "vagrant ssh -c \"source /vagrant/scripts/guest/setup-vboxguest.sh\""
         # If nonzero exit code, additions must have updated
