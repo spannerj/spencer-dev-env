@@ -25,7 +25,7 @@ sudo wget -c -q http://download.virtualbox.org/virtualbox/5.1.14/VBoxGuestAdditi
 sudo mount VBoxGuestAdditions_5.1.14.iso -o loop /mnt
 
 # Install everything the compiler needs
-sudo yum -q -y install kernel-devel kexec-tools kernel-headers gcc gcc-c++ gcc-gfortran libquadmath-devel libtool systemtap
+sudo yum -q -y install kernel-devel kexec-tools kernel-headers gcc gcc-c++ gcc-gfortran libquadmath-devel libtool systemtap dkms
 
 cd /mnt
 # This is needed in case the using DKMS didn't work so the installer needs to manually compile
