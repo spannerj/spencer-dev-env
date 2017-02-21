@@ -1,4 +1,4 @@
-LAST_INSTALLED_KERNEL=$(ls -t /boot/vmlinuz-* | sed "s/\/boot\/vmlinuz-//g" | head -n1)
+LAST_INSTALLED_KERNEL=$(rpm -q --last kernel | perl -pe 's/^kernel-(\S+).*/$1/' | head -1)
 CURRENT_RUNNING_KERNEL=$(uname -r)
 if [ "$LAST_INSTALLED_KERNEL" != "$CURRENT_RUNNING_KERNEL" ]
 then
