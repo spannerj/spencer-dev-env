@@ -287,8 +287,6 @@ Vagrant.configure(2) do |config|
       puts colorize_yellow("Please restart the machine (vagrant reload)")
       File.write(QUICK_RELOAD_FILE, "Hi")
       exit
-    else
-      puts colorize_green("Linux Kernel is up to date")
     end
 
     # Same for guest additions, except it's both the install and reboot steps in here because the kernel reboot is needed first
