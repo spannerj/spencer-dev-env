@@ -138,15 +138,15 @@ if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
   # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
   puts colorize_lightblue("Retrieving custom configuration repo files:")
   if Dir.exists?(root_loc + '/dev-env-project')
-    command_successful = run_command('git -C ' + root_loc + '/dev-env-project pull')
+    command_successful = run_command("git -C #{root_loc}/dev-env-project pull")
     new_project = false
   else
-    command_successful = run_command('git clone ' + File.read(DEV_ENV_CONTEXT_FILE) +  root_loc + '/dev-env-project')
+    command_successful = run_command("git clone #{File.read(DEV_ENV_CONTEXT_FILE)} #{root_loc}/dev-env-project")
     new_project = true
   end
 
   # Error if git clone or pulling failed
-  if command_successful == false
+  if command_successful != 0
     puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project. Check your URL?")
     # If we were cloning from a new URL, it is possible the URL was wrong - reset everything so they're asked again next time
     if new_project == true
