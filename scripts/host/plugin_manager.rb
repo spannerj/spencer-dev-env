@@ -29,7 +29,7 @@ def check_plugins(plugins)
 			# > 0.0.21 is broken (https://github.com/kusnier/vagrant-persistent-storage/issues/58)
 			if plugin_name == "vagrant-persistent-storage" and plugin.index("0.0.21") == nil
 				puts "Not running recommended stable version of vagrant-persistent-storage."
-				if not system "vagrant plugin install vagrant-persistent-storage --plugin-version 0.0.21"
+				if run_command("vagrant plugin install vagrant-persistent-storage --plugin-version 0.0.21") != 0
 					puts "Error - Could not install"
 					exit -1
 				else
@@ -47,7 +47,7 @@ def check_plugins(plugins)
 				else
 				 	plg_command = "vagrant plugin install #{plugin}"
 				end
-				if not system plg_command
+				if run_command(plg_command) != 0
 					puts "\n\033[33m" << " - Could not install plugin '#{plugin}'. " << "\e[0m\033[41m" <<"Stopped." << "\e[0m"
 					exit -1
 				else

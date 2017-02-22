@@ -30,7 +30,7 @@ def update_apps(root_loc)
 
         # Update all the remote branches (this will not change the local branch, we'll do that further down')
         puts colorize_lightblue("Fetching from remote...")
-        if not system 'git', '-C', "#{root_loc}/apps/#{appname}", 'fetch', 'origin'
+        if run_command('git -C ' + "#{root_loc}/apps/#{appname} fetch origin") != 0
           # If there is a git error we shouldn't continue
           puts colorize_red("Error while updating #{appname}")
           puts colorize_yellow("Continuing in 3 seconds...")
@@ -39,7 +39,7 @@ def update_apps(root_loc)
       else
         puts colorize_lightblue("#{appname} does not yet exist, so I will clone it")
         repo = appconfig["repo"]
-        if not system 'git', 'clone', "#{repo}", "#{root_loc}/apps/#{appname}"
+        if run_command("git clone #{repo} #{root_loc}/apps/#{appname}") != 0
           # If there is a git error we shouldn't continue
           puts colorize_red("Error while cloning #{appname}")
           puts colorize_yellow("Continuing in 3 seconds...")
@@ -52,14 +52,14 @@ def update_apps(root_loc)
         required_branch = appconfig['branch']
         if not current_branch.eql? required_branch
           puts colorize_lightblue("Switching branch to #{required_branch}")
-          system 'git', '-C', "#{root_loc}/apps/#{appname}", 'checkout', '--track', "origin/#{required_branch}"
+          run_command("git -C #{root_loc}/apps/#{appname} checkout --track origin/#{required_branch}")
         else
           puts colorize_lightblue("Current branch is already #{current_branch}")
         end
       end
       # Attempt to merge our remote branch into our local branch, if it's straightforward
       puts colorize_lightblue("Bringing #{required_branch} up to date")
-      if not system 'git', '-C', "#{root_loc}/apps/#{appname}", 'merge', '--ff-only'
+      if run_command("git -C #{root_loc}/apps/#{appname} merge --ff-only") != 0
         colorize_yellow("The local branch couldn't be fast forwarded (a merge is probably required), so to be safe I didn't update anything")
       end
     end

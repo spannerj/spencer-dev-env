@@ -19,8 +19,19 @@ require_relative 'scripts/host/self_update'
 require 'fileutils'
 require 'open3'
 
+# Ensures stdout is never buffered
+STDOUT.sync = true
+
 # Where is this file located?
 root_loc = File.dirname(__FILE__)
+
+QUICK_RELOAD_FILE = root_loc + "/.quick-reload"
+
+# Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
+# As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
+DEV_ENV_CONTEXT_FILE = root_loc + "/.dev-env-context"
+
+LOGGING_CHOICE_FILE = root_loc + "/.log-choice"
 
 # Find out where persistent storage file might live
 if ENV.has_key?('VAGRANT_HOME') # Overidden by user
@@ -49,19 +60,33 @@ if ['reload', 'halt'].include? ARGV[0]
     # If this file exists it must have previously got to the point of creating the containers
     # and if it has something in we know there are apps to stop and won't get an error
     puts colorize_lightblue('Stopping apps')
-    system "vagrant ssh -c \"docker-compose stop\""
+    run_command("vagrant ssh -c \"docker-compose stop\"")
   end
 end
 
+# If provisioning (or upping for the first time)
+if !(['provision', '--provision'] & ARGV).empty? || !File.exist?(root_loc + "/.vagrant/machines/default/virtualbox/action_provision")
+  puts colorize_yellow("Provision detected - resetting commodities and logging choice")
+  do_additions_kernel_updates = true  # So we can do additions and kernel updates below
+  # Delete commodities list as all containers will need reprovisioning from scratch
+  File.delete(root_loc + '/.commodities.yml') if File.exists?(root_loc + '/.commodities.yml')
+  # Allow them to make the logging choice again
+  File.delete(LOGGING_CHOICE_FILE) if File.exists?(LOGGING_CHOICE_FILE)
+  # Just in case they were in the middle of a quick reload then changed their mind and did a provision
+  File.delete(QUICK_RELOAD_FILE) if File.exists?(QUICK_RELOAD_FILE)
+else
+  do_additions_kernel_updates = false
+end
+
 # If a quick reload file has been created, we'll skip the up/resume/reload section below, so no dev-env or app updates
-QUICK_RELOAD_FILE = root_loc + "/.quick-reload"
 quick_reload = false
 if ['up', 'resume', 'reload'].include?(ARGV[0]) && File.exists?(QUICK_RELOAD_FILE)
   quick_reload = true
   File.delete(QUICK_RELOAD_FILE)
   puts colorize_lightblue("Quick reload request detected. Whoosh!")
+  # If we have quick-reloaded, also set this to true so we can do guest additions update after a kernel reboot
+  do_additions_kernel_updates = true
 end
-
 
 # Only if vagrant up/resume do we want to check for update
 if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
@@ -92,16 +117,85 @@ if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
   end
 end
 
-# Define the DEV_ENV_CONTEXT_FILE file name to store the users app_grouping choice
-# As vagrant up can be run from any subdirectory, we must make sure it is stored alongside the Vagrantfile
-DEV_ENV_CONTEXT_FILE = root_loc + "/.dev-env-context"
-
-LOGGING_CHOICE_FILE = root_loc + "/.log-choice"
-
 if ENV.has_key?('VM_MEMORY')
   vm_memory = ENV['VM_MEMORY'].to_i
 else
   vm_memory = 4096
+end
+
+# Only if vagrant up/resume do we want to create dev-env configuration
+if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
+  # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
+  if File.exists?(DEV_ENV_CONTEXT_FILE)
+    puts ""
+    puts colorize_green("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
+  else
+    print colorize_yellow("Please enter the url of your dev env repo (SSH): ")
+    app_grouping = STDIN.gets.chomp
+    File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
+  end
+
+  # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
+  puts colorize_lightblue("Retrieving custom configuration repo files:")
+  if Dir.exists?(root_loc + '/dev-env-project')
+    command_successful = run_command('git -C ' + root_loc + '/dev-env-project pull')
+    new_project = false
+  else
+    command_successful = run_command('git clone ' + File.read(DEV_ENV_CONTEXT_FILE) +  root_loc + '/dev-env-project')
+    new_project = true
+  end
+
+  # Error if git clone or pulling failed
+  if command_successful == false
+    puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project. Check your URL?")
+    # If we were cloning from a new URL, it is possible the URL was wrong - reset everything so they're asked again next time
+    if new_project == true
+      File.delete(DEV_ENV_CONTEXT_FILE)
+      if Dir.exists?(root_loc + '/dev-env-project')
+        FileUtils.rm_r root_loc + '/dev-env-project'
+      end
+    end
+    puts colorize_yellow("Continuing in 10 seconds (CTRL+C to quit)...")
+    sleep(10)
+  end
+
+  # If they have made an ELK stack choice already, say so
+  if File.exists?(LOGGING_CHOICE_FILE)
+    if (File.read(LOGGING_CHOICE_FILE) == 'full')
+      vm_memory_message = vm_memory + 1536
+      puts colorize_lightblue("This dev-env is running the full ELK stack. Increasing memory to #{vm_memory_message}mb")
+    else
+      puts colorize_yellow("This dev-env is not running the full ELK stack.")
+    end
+    puts ""
+  else
+    # Otherwise ask if they'd like to run the full ELK stack
+    puts ""
+    print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? If you say yes, an extra 1.5gb of memory will be added to the configured amount (#{vm_memory}mb). This is NOT recommended for machines with 8gb or less of system RAM! Regardless of your choice, logs can also be found in /logs/log.txt, or viewed as they happen using the livelogs alias. (y/n) ")
+    confirm = STDIN.gets.chomp
+    until confirm.upcase.start_with?('Y', 'N')
+      print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? If you say yes, an extra 1.5gb of memory will be added to the configured amount (#{vm_memory}mb). This is NOT recommended for machines with 8gb or less of system RAM! Regardless of your choice, logs can also be found in /logs/log.txt, or viewed as they happen using the livelogs alias. (y/n) ")
+      confirm = STDIN.gets.chomp
+    end
+    # Save their choice for future ups
+    if confirm.upcase.start_with?('Y')
+      File.open(LOGGING_CHOICE_FILE, "w+") { |file| file.write("full") }
+    else
+      File.open(LOGGING_CHOICE_FILE, "w+") { |file| file.write("lite") }
+    end
+  end
+
+  # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
+  puts colorize_lightblue("Updating apps:")
+  update_apps(root_loc)
+
+  # Create a file called .commodities.yml with the list of commodities in it
+  puts colorize_lightblue("Creating list of commodities")
+  create_commodities_list(root_loc)
+
+  # Download any external supporting files
+  puts colorize_lightblue("Downloading supporting files")
+  load_supporting_files(root_loc)
 end
 
 Vagrant.configure(2) do |config|
@@ -122,100 +216,6 @@ Vagrant.configure(2) do |config|
     config.persistent_storage.location = docker_storage_location
     config.persistent_storage.size = 50000
     config.persistent_storage.mountpoint = '/var/lib/docker'
-  end
-
-  config.trigger.before :provision do
-    puts colorize_green("LOLOLOLOLOL")
-  end
-
-  # If provisioning (or upping for the first time)
-  if !(['provision', '--provision'] & ARGV).empty? || !File.exist?(root_loc + "/.vagrant/machines/default/virtualbox/action_provision")
-    puts colorize_yellow("Provision detected - resetting commodities amd logging choice")
-    do_additions_update = true  # So we can do additions update below
-    # Delete commodities list as all containers will need reprovisioning from scratch
-    File.delete(root_loc + '/.commodities.yml') if File.exists?(root_loc + '/.commodities.yml')
-    # Allow them to make the logging choice again
-    File.delete(LOGGING_CHOICE_FILE) if File.exists?(LOGGING_CHOICE_FILE)
-  elsif quick_reload
-    # If we have quick-reloaded, also set this to true so we can do guest additions update after a kernel update
-    do_additions_update = true
-  else
-    do_additions_update = false
-  end
-
-  # Only if vagrant up/resume do we want to create dev-env configuration
-  if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
-    # Check if a DEV_ENV_CONTEXT_FILE exists, to prevent prompting for dev-env configuration choice on each vagrant up
-    if File.exists?(DEV_ENV_CONTEXT_FILE)
-      puts ""
-      puts colorize_green("This dev env has been provisioned to run for the repo: #{File.read(DEV_ENV_CONTEXT_FILE)}")
-    else
-      print colorize_yellow("Please enter the url of your dev env repo (SSH): ")
-      app_grouping = STDIN.gets.chomp
-      File.open(DEV_ENV_CONTEXT_FILE, "w+") { |file| file.write(app_grouping) }
-    end
-
-    # Check if dev-env-project exists, and if so pull the dev-env configuration. Otherwise clone it.
-    puts colorize_lightblue("Retrieving custom configuration repo files:")
-    if Dir.exists?(root_loc + '/dev-env-project')
-      command_successful = system 'git', '-C', root_loc + '/dev-env-project', 'pull'
-      new_project = false
-    else
-      command_successful = system 'git', 'clone', File.read(DEV_ENV_CONTEXT_FILE), root_loc + '/dev-env-project'
-      new_project = true
-    end
-
-    # Error if git clone or pulling failed
-    if command_successful == false
-      puts colorize_red("Something went wrong when cloning/pulling the dev-env configuration project. Check your URL?")
-      # If we were cloning from a new URL, it is possible the URL was wrong - reset everything so they're asked again next time
-      if new_project == true
-        File.delete(DEV_ENV_CONTEXT_FILE)
-        if Dir.exists?(root_loc + '/dev-env-project')
-          FileUtils.rm_r root_loc + '/dev-env-project'
-        end
-      end
-      puts colorize_yellow("Continuing in 10 seconds (CTRL+C to quit)...")
-      sleep(10)
-    end
-
-    # If they have made an ELK stack choice already, say so
-    if File.exists?(LOGGING_CHOICE_FILE)
-      if (File.read(LOGGING_CHOICE_FILE) == 'full')
-        vm_memory_message = vm_memory + 1536
-        puts colorize_lightblue("This dev-env is running the full ELK stack. Increasing memory to #{vm_memory_message}mb")
-      else
-        puts colorize_yellow("This dev-env is not running the full ELK stack.")
-      end
-      puts ""
-    else
-      # Otherwise ask if they'd like to run the full ELK stack
-      puts ""
-      print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? This is quite memory intensive, so I will add an extra 1.5gb of memory onto the configured amount (#{vm_memory}mb) if you say yes! Logs can always be found in /logs/log.txt. (y/n) ")
-      confirm = STDIN.gets.chomp
-      until confirm.upcase.start_with?('Y', 'N')
-        print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? This is quite memory intensive, so I will add an extra 1.5gb of memory onto the configured amount (#{vm_memory}mb) if you say yes! Logs can always be found in /logs/log.txt. (y/n) ")
-        confirm = STDIN.gets.chomp
-      end
-      # Save their choice for future ups
-      if confirm.upcase.start_with?('Y')
-        File.open(LOGGING_CHOICE_FILE, "w+") { |file| file.write("full") }
-      else
-        File.open(LOGGING_CHOICE_FILE, "w+") { |file| file.write("lite") }
-      end
-    end
-
-    # Call the ruby function to pull/clone all the apps found in dev-env-project/configuration.yml
-    puts colorize_lightblue("Updating apps:")
-    update_apps(root_loc)
-
-    # Create a file called .commodities.yml with the list of commodities in it
-    puts colorize_lightblue("Creating list of commodities")
-    create_commodities_list(root_loc)
-
-    # Download any external supporting files
-    puts colorize_lightblue("Downloading supporting files")
-    load_supporting_files(root_loc)
   end
 
   if ['up', 'resume', 'reload'].include?(ARGV[0])
@@ -270,37 +270,41 @@ Vagrant.configure(2) do |config|
     config.vm.provision :shell, :inline => "source /vagrant/dev-env-project/environment.sh"
   end
 
-  # FINALLY - Update kernel
-  # We want up to date kernel to ensure maximum compatibility with advanced docker features like overlayfs
-  config.vm.provision :shell, :inline => "source /vagrant/scripts/guest/update-kernel.sh"
-
   # Once the machine is fully configured and (re)started, run some more stuff like commodity initialisation/provisioning
   config.trigger.after [:up, :resume, :reload] do
-    # We only want to do the kernel reboot if we have to, but if we do have to, we must not let the rest of the trigger run
-    # (this time)
-    # We're using Open3 instead of system due to a weird problem where "system" stops the console redrawing until a key is pressed
-    # at the end of the vagrant provisoning steps
-    stdout, stdeerr, status = Open3.capture3("vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel-check.sh\"")
-    if stdout.include? "UPDATED"
-      # If nonzero exit code, kernel must have updated
-      puts colorize_yellow("Linux Kernel has been updated.")
-      puts colorize_yellow("Please restart the machine (vagrant reload)")
-      File.write(QUICK_RELOAD_FILE, "Hi")
-      exit
-    end
+    # We only want to do kernel and additions updates after provisioning has fully finished rather than part of it, 
+    # because reboots will get in the way of the provision flow
+    if do_additions_kernel_updates
+      puts colorize_yellow("Checking Linux Kernel")
+      kernel_status = run_command("vagrant ssh -c \"source /vagrant/scripts/guest/update-kernel.sh\"")
+      if kernel_status == 0
+        # If zero exit code, kernel must have updated
+        puts colorize_yellow("Linux Kernel has been updated.")
+        puts colorize_yellow("Please restart the machine (vagrant reload)")
+        File.write(QUICK_RELOAD_FILE, "Hi")
+        exit
+      elsif kernel_status == 99
+        # Still good
+        puts colorize_green("Linux Kernel is up to date")
+      else
+        puts colorize_red("Something went wrong when updating the Linux Kernel. Check the output above.")
+        exit
+      end
 
-    # Same for guest additions, except it's both the install and reboot steps in here because the kernel reboot is needed first
-    # so we can't do the install in a proper provision step like we do the kernel, so we manually check if we are provisioning
-    if do_additions_update
-      puts colorize_lightblue("Updating VirtualBox Guest Additions")
-      if system "vagrant ssh -c \"source /vagrant/scripts/guest/setup-vboxguest.sh\""
-        # If nonzero exit code, additions must have updated
+      puts colorize_lightblue("Checking VirtualBox Guest Additions")
+      additions_status = run_command("vagrant ssh -c \"source /vagrant/scripts/guest/setup-vboxguest.sh\"")
+      if additions_status == 0
+        # If zero exit code, additions must have updated
         puts colorize_yellow("VirtualBox Guest Additions have been updated.")
         puts colorize_yellow("Please restart the machine (vagrant reload)")
         File.write(QUICK_RELOAD_FILE, "Hi")
         exit
-      else
+      elsif additions_status == 99
+        # Still good
         puts colorize_green("VirtualBox Guest Additions is up to date")
+      else
+        puts colorize_red("Something went wrong when updating VirtualBox Guest Additions. Check the output above.")
+        exit
       end
     end
 
@@ -308,8 +312,9 @@ Vagrant.configure(2) do |config|
     puts colorize_lightblue("Creating docker-compose")
     prepare_compose(root_loc)
 
-    # Build and start all the containers
-    if not system "vagrant ssh -c \"source /vagrant/scripts/guest/docker/docker-provision.sh\""
+    # Build and create all the containers
+    docker_status = run_command("vagrant ssh -c \"source /vagrant/scripts/guest/docker/docker-provision.sh\"")
+    if docker_status != 0
       puts colorize_red("Something went wrong when creating your Docker images or containers. Check the output above.")
       exit
     end
@@ -338,13 +343,13 @@ Vagrant.configure(2) do |config|
         puts colorize_lightblue("Starting ELK stack...")
         # Start the bits of ELK they have asked for
         if File.read(LOGGING_CHOICE_FILE) == 'lite'
-          system "vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash\""
+          run_command("vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash\"")
         else
-          system "vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash elasticsearch-logs kibana\""
+          run_command("vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash elasticsearch-logs kibana\"")
         end
       end
       puts colorize_lightblue("Starting containers...")
-      system "vagrant ssh -c \"docker-compose up --no-build -d \""
+      run_command("vagrant ssh -c \"docker-compose up --no-build -d \"")
     else
       puts colorize_yellow("No containers to start.")
     end
@@ -353,7 +358,7 @@ Vagrant.configure(2) do |config|
     # If the dev env configuration repo contains a script, run it here
     # This should only be for temporary use during early app development - see the README for more info
     if File.exists?(root_loc + '/dev-env-project/after-up.sh')
-      system "vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\""
+      run_command("vagrant ssh -c \"source /vagrant/dev-env-project/after-up.sh\"")
     end
 
     puts colorize_green("All done, environment is ready for use")

@@ -45,6 +45,6 @@ def provision_nginx(root_loc)
     # Stop it. As it will need to start after the apps for the proxying to not error out. So let it start with all the rest later.
     docker_commands.push("docker-compose stop nginx")
     # Now actually run the commands
-    system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
+    run_command("vagrant ssh -c \"" + docker_commands.join(" && ") + "\"")
   end
 end

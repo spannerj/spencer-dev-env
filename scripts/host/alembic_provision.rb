@@ -40,6 +40,6 @@ def provision_alembic(root_loc)
   end
   unless docker_commands.empty?
     puts colorize_lightblue("Running alembic database provisioning")
-    system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
+    run_command("vagrant ssh -c \"" + docker_commands.join(" && ") + "\"")
   end
 end

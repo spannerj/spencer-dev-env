@@ -50,7 +50,7 @@ def provision_db2(root_loc)
   end
   if prepared_one
     # Now actually run the commands
-    system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
+    run_command("vagrant ssh -c \"" + docker_commands.join(" && ") + "\"")
   end
 end
 
