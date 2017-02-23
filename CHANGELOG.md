@@ -3,13 +3,14 @@
 ## v2.0.0
 
 * MAJOR - Due to memory issues when running many apps, the full ELK stack is now optional, via a question asked during provision. Extra memory will be allocated to the machine if it is chosen. Whether you run the stack or not, logs now also write to logs/log.txt for Kibana-less viewing
-* MAJOR - All base images are now prebuilt and stored on Docker Hub, pulled down during vagrant up. The Dockerfiles are now stored in their own repo.
-* Added the ability for apps to change the hosts file of the machine running vagrant via `host-fragments.yml` (Thanks Andy Barnes)
+* MAJOR - All base images are now prebuilt and stored on Docker Hub, pulled down during vagrant up. The Dockerfiles are now stored in their own repo (#37, #35, #30)
+* Added the ability for apps to change the hosts file of the machine running vagrant via `host-fragments.yml` (Thanks Andy Barnes) (#36)
 * Changed Python from a custom LR build to one provided by the IUS Community Project in all Python base images, to match changes made by webops
+* Added support for Elasticsearch v5 commodity (#39)
 * Updated Gradle to 3.3 in base Java images
 * Fixed DB2 provisioning issue if init SQL file has strict permissions
 * Allow machine to (eventually) start successfully even if internet is down (#34)
-* Update kernel and guest additions to the latest versions during provisioning/first up
+* Update kernel and guest additions to the latest versions during provisioning/first up (#33)
 * Added `livelogs` alias, which allows you to see the logs of a given app as they occur in your console, even if they are also going to ELK.
 
 ## 1.3.1.2

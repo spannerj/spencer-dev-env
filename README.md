@@ -144,7 +144,7 @@ This file contains any SQL to run in DB2 during the initial setup - at the minim
 
 [Example](http://192.168.249.38/common/dev-env/snippets/9)
 
-#### `/fragments/elasticsearch-fragment.sh` (elasticsearch)
+#### `/fragments/elasticsearch-fragment.sh` (elasticsearch) or `/fragments/elasticsearch5-fragment.sh` (elasticsearch5)
 
 This file is a shell script that contains curl commands to do any setup the app needs in elasticsearch - creating indexes etc. It will be passed a single argument, the hostname, which can be accessed in the script using `$1`.
 

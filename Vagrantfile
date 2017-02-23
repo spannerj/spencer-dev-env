@@ -13,6 +13,7 @@ require_relative 'scripts/host/alembic_provision'
 require_relative 'scripts/host/db2_provision'
 require_relative 'scripts/host/commodities'
 require_relative 'scripts/host/elasticsearch_provision'
+require_relative 'scripts/host/elasticsearch5_provision'
 require_relative 'scripts/host/supporting_files'
 require_relative 'scripts/host/hosts_provision'
 require_relative 'scripts/host/self_update'
@@ -332,6 +333,8 @@ Vagrant.configure(2) do |config|
     provision_db2(root_loc)
     # Elasticsearch
     provision_elasticsearch(root_loc)
+    # Elasticsearch5
+    provision_elasticsearch5(root_loc)
     # Nginx
     provision_nginx(root_loc)
 
