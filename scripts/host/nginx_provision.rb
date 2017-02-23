@@ -10,7 +10,7 @@ def provision_nginx(root_loc)
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
 
   docker_commands = []
-  docker_commands.push("docker-compose start nginx")
+  docker_commands.push("docker-compose up --no-build -d nginx")
 
   if config["applications"]
     config["applications"].each do |appname, appconfig|

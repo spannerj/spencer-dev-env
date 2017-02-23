@@ -64,11 +64,6 @@ if ! [ -z "$COMPOSE_FILE" ]; then
   else
     docker network create dv_default
   fi
-
-  echo "- - - (Re)creating docker containers - - -"
-  /usr/local/bin/docker-compose create --no-build
-  # If the exit code of the create command was not 0 (i.e. it failed) then bomb out of the whole process here so it's obvious to the user where an image failed to build
-  rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 fi
 
 echo "- - - Removing any orphaned docker volumes - - -"
