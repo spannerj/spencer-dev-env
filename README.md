@@ -171,7 +171,7 @@ The initial intention of this capability is to allow ADFS login redirects to wor
 
 An ELK stack is created if any application requests the "logging" commodity. It will capture the output of any containers that are configured (via their docker-compose-fragment) to forward their messages to logstash via syslog.
 
-Because the full stack is quite memory intensive, you will be asked during provisioning if you want to run it. If you choose yes, then an extra 1.5gb of memory will be allocated to the machine over and above what is configured. If you choose no, then only Logstash will be activated. In either case, logs will also be forward to logs/log.txt for viewing outside of Kibana.
+Because the full stack is quite memory intensive, you will be asked during provisioning if you want to run it. If you choose yes, then an extra 1gb of memory will be allocated to the machine over and above what is configured. If you choose no, then only Logstash will be activated. In either case, logs will also be forward to logs/log.txt for viewing outside of Kibana.
 
 If running the full stack, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it!
 

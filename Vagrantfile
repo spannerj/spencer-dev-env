@@ -163,7 +163,7 @@ if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
   # If they have made an ELK stack choice already, say so
   if File.exists?(LOGGING_CHOICE_FILE)
     if (File.read(LOGGING_CHOICE_FILE) == 'full')
-      vm_memory_message = vm_memory + 1536
+      vm_memory_message = vm_memory + 1024
       puts colorize_lightblue("This dev-env is running the full ELK stack. Increasing memory to #{vm_memory_message}mb")
     else
       puts colorize_yellow("This dev-env is not running the full ELK stack.")
@@ -172,10 +172,10 @@ if ['up', 'resume', 'reload'].include?(ARGV[0]) && quick_reload == false
   else
     # Otherwise ask if they'd like to run the full ELK stack
     puts ""
-    print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? If you say yes, an extra 1.5gb of memory will be added to the configured amount (#{vm_memory}mb). This is NOT recommended for machines with 8gb or less of system RAM! Regardless of your choice, logs can also be found in /logs/log.txt, or viewed as they happen using the livelogs alias. (y/n) ")
+    print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? If you say yes, an extra 1gb of memory will be added to the configured amount (#{vm_memory}mb). This is NOT recommended for machines with 8gb or less of system RAM! Regardless of your choice, logs can also be found in /logs/log.txt, or viewed as they happen using the livelogs alias. (y/n) ")
     confirm = STDIN.gets.chomp
     until confirm.upcase.start_with?('Y', 'N')
-      print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? If you say yes, an extra 1.5gb of memory will be added to the configured amount (#{vm_memory}mb). This is NOT recommended for machines with 8gb or less of system RAM! Regardless of your choice, logs can also be found in /logs/log.txt, or viewed as they happen using the livelogs alias. (y/n) ")
+      print colorize_yellow("Would you like to run the full ELK stack to store and view app logs? If you say yes, an extra 1gb of memory will be added to the configured amount (#{vm_memory}mb). This is NOT recommended for machines with 8gb or less of system RAM! Regardless of your choice, logs can also be found in /logs/log.txt, or viewed as they happen using the livelogs alias. (y/n) ")
       confirm = STDIN.gets.chomp
     end
     # Save their choice for future ups
@@ -226,7 +226,7 @@ Vagrant.configure(2) do |config|
 
   # If they have made an ELK stack choice already, increase the memory use variable
   # We do it here instead of the bit above where we ask them, in case that bit doesn't get run.
-  vm_memory += 1536 if File.exists?(LOGGING_CHOICE_FILE) && File.read(LOGGING_CHOICE_FILE) == 'full'
+  vm_memory += 1024 if File.exists?(LOGGING_CHOICE_FILE) && File.read(LOGGING_CHOICE_FILE) == 'full'
 
   # In the event of user requesting a vagrant destroy
   config.trigger.before :destroy do
