@@ -11,7 +11,7 @@ def provision_db2(root_loc)
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
 
   docker_commands = []
-  docker_commands.push("docker-compose up --no-build -d db2")
+  docker_commands.push("docker-compose up --build -d db2")
 
   # Better not run anything until DB2 is ready to accept connections...
   docker_commands.push("echo Waiting for DB2 to finish initialising")

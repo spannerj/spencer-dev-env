@@ -53,11 +53,6 @@ echo "export COMPOSE_FILE='$COMPOSE_FILE'" >> ${HOME}/.bash_profile
 
 # If there's docker apps (the var is not empty), then do docker stuff
 if ! [ -z "$COMPOSE_FILE" ]; then
-  echo "- - - (Re)building docker images (volumes kept) - - -"
-  /usr/local/bin/docker-compose build
-  # If the exit code of the build command was not 0 (i.e. it failed) then bomb out of the whole process here so it's obvious to the user where an image failed to build
-  rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-
   # Workaround because docker-compose create doesn't create network (only up does) and it's needed to create the containers
   if docker network ls | grep -q "dv_default"; then
     echo "Docker network already exists, skipping creation"

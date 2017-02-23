@@ -346,13 +346,18 @@ Vagrant.configure(2) do |config|
         puts colorize_lightblue("Starting ELK stack...")
         # Start the bits of ELK they have asked for
         if File.read(LOGGING_CHOICE_FILE) == 'lite'
-          run_command("vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash\"")
+          run_command("vagrant ssh -c \"docker-compose up --build -d --remove-orphans logstash\"")
         else
-          run_command("vagrant ssh -c \"docker-compose up --no-build -d --remove-orphans logstash elasticsearch-logs kibana\"")
+          run_command("vagrant ssh -c \"docker-compose up --build -d --remove-orphans logstash elasticsearch-logs kibana\"")
         end
       end
       puts colorize_lightblue("Starting containers...")
-      run_command("vagrant ssh -c \"docker-compose up --no-build -d \"")
+      up_exit_code = run_command("vagrant ssh -c \"docker-compose up --build -d \"")
+      if up_exit_code != 0
+        puts colorize_red("Something went wrong when creating your app images or containers. Check the output above.")
+        exit
+      end
+
     else
       puts colorize_yellow("No containers to start.")
     end
