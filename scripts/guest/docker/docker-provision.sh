@@ -1,7 +1,7 @@
 # Needed for Elasticsearch 5.0 docker to run
 sudo sysctl -w vm.max_map_count=262144 > /dev/null 2>&1
 
-echo "- - - Pulling base docker python images - - -"
+echo "- - - Pulling base docker images - - -"
 # If these haven't changed, the cache should be used and no app images will rebuild. Hopefully.
 
 # Build and push commands to run after updating the Dockerfile(s) are contained in http://192.168.249.38/common/dev-env/snippets/10
