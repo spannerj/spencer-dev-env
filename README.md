@@ -231,4 +231,4 @@ docker-compose run --rm --service-ports <name of container>
 * The first vagrant up after a destroy might have issues if you have a large number of apps. If it dies complaining about "cannot allocate memory", just reload and it will likely sort itself out.
 * By default it gives itself 4gb of RAM but you can override this with the VM_MEMORY windows environment variable. For example, if you have a 16gb machine it's safe to double it to 8192.
 * Make sure you `vagrant halt` before rebooting or shutting down your windows machine. Not doing this is effectively like pulling the plug and will almost certainly corrupt it.
-* `vagrant destroy` should be a last resort. Try `vagrant up --provision` (or `vagrant reload --provision`, if your vm is currently running) as that will clean out your app containers and recreate them. They are most likely to be the source of any corruption.
+* `vagrant destroy` should be a last resort. Try `vagrant up --provision` (or `vagrant reload --provision`, if your vm is currently running) as that will clean out your app containers and recreate them. They are most likely to be the source of any corruption.
