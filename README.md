@@ -16,7 +16,7 @@ It provides several hooks for applications to take advantage of, including:
 ## Software
 
 * [Oracle VirtualBox](https://www.virtualbox.org/) (v5.0.14+)
-* [Vagrant](https://www.vagrantup.com/) (v1.8+))
+* [Vagrant](https://www.vagrantup.com/) (v1.8+ but NOT 1.8.5))
   * Make sure you do **not** have the vagrant-vbguest plugin installed. Any plugins the environment needs will be installed automatically.
 * **_Windows users only_** [Git For Windows](http://git-for-windows.github.io) (download the portable zip version to get around any admin requirements) All the instructions in this README assume that you will be using Git Bash/MINGW64 which comes as part of this. It gives you a Unix-like shell and commands which make life much easier. While this software is technically optional, getting everything to work in the normal Windows command line is not covered here.
 
@@ -102,7 +102,7 @@ If this file exists, it will be used to construct the container (after building 
 
 This is the file that contructs the application container image. The standard rules are:
 
-* There are base images provided that the app should extend (lr_base_python, lr_base_python_flask and lr_base_java - they have their own Dockerfiles in this repo that can be inspected if you wish to learn more about what they provide for you (for example, Flask provides a default command that runs gunicorn), but in general you can use the examples and just change the app-specific section to set variables and install any extra software via yum.
+* There are [base images](192.168.249.38/common/dev-env-base-images) that the app can extend (lr_base_python, lr_base_python_flask, lr_base_java and lr_base_ruby - they have their own Dockerfiles that can be inspected if you wish to learn more about what they provide for you (for example, Flask provides a default command that runs gunicorn), but in general you can use the examples and just change the app-specific section to set variables and install any extra software via yum.
 * Any environment variables that need to change to make it work within Docker over and above the application defaults (usually variables that require hostnames) should be specified.
 * If there is a port environment variable, set it to 8080 (so that the docker-compose fragments are more consistent in their mappings)
 
@@ -144,7 +144,7 @@ This file contains any SQL to run in DB2 during the initial setup - at the minim
 
 [Example](http://192.168.249.38/common/dev-env/snippets/9)
 
-#### `/fragments/elasticsearch-fragment.sh` (elasticsearch)
+#### `/fragments/elasticsearch-fragment.sh` (elasticsearch) or `/fragments/elasticsearch5-fragment.sh` (elasticsearch5)
 
 This file is a shell script that contains curl commands to do any setup the app needs in elasticsearch - creating indexes etc. It will be passed a single argument, the hostname, which can be accessed in the script using `$1`.
 
@@ -155,18 +155,28 @@ This file is a shell script that contains curl commands to do any setup the app 
 This file forms part of an nginx configration file. It will be included within the server directive of the main configuration file.
 
 Important - if your app is adding itself as a proxied location{} behind nginx, nginx must start AFTER your app, otherwise it will error with a host not found. So your app's docker-compose-fragment.yml must actually specify nginx as a service and set the depends_on variable with your app's name. Compose will automatically merge this with the dev-env's nginx fragment. See the end of the [example fragment](http://192.168.249.38/common/dev-env/snippets/8) for the exact code.
-
 [Example](http://192.168.249.38/common/dev-env/snippets/11)
+
+### Other files
+
+#### `/fragments/host-fragments.yml`
+
+This file contains details of hosts to be forwarded; if it exists then requests to the second address shall be forwarded to the first address. Note that this changes the host file on the machine running the vagrant box, not within the vagrant box itself.
+
+The initial intention of this capability is to allow ADFS login redirects to work (localhost is not an allowed redirect host so apps are registered under another e.g. workflow-development)
+
+[Example](http://192.168.249.38/common/dev-env/snippets/15)
 
 ## Logging
 
 An ELK stack is created if any application requests the "logging" commodity. It will capture the output of any containers that are configured (via their docker-compose-fragment) to forward their messages to logstash via syslog.
 
-Once some logs have been, well, logged, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it!
+Because the full stack is quite memory intensive, you will be asked during provisioning if you want to run it. If you choose yes, then an extra 1gb of memory will be allocated to the machine over and above what is configured. If you choose no, then only Logstash will be activated. In either case, logs will also be forward to logs/log.txt for viewing outside of Kibana.
 
-There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page.
+If running the full stack, you can visit http://localhost:15601/ on your host machine and you'll get the Kibana welcome page. Choose "@timestamp" as your time-field name, and then you will be able to click the Create button, and start using it!
 
-To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
+There are 3 saved searches available for you that you can open in the Discover tab. The display table will be set up to show the parsed information (assuming you are using the logging format defined in the skeleton-api). You can then turn on auto-refresh and enjoy! There is also a dashboard available that shows both searches on the same page. To import them, go to Settings/Objects/Import and browse to `saved.json` in `/scripts/guest/docker/logging`.
+
 
 # Useful commands
 
@@ -177,7 +187,8 @@ status                                           -     view the status of all ru
 stop <name of container>                         -     stop a container
 start <name of container>                        -     start a container
 restart <name of container>                      -     restart a container
-logs <name of container>                         -     view the logs of a container
+logs <name of container>                         -     view the logs of a container (from the past)
+livelogs <name of container>                     -     view the logs of a container (as they happen)
 exec <name of container> <command to execute>    -     execute a command in a running container
 run <options> <name of container> <command>      -     creates a new container and runs the command in it.
 remove <name of container>                       -     remove a container
@@ -211,5 +222,13 @@ For those who get bored typing docker-compose you can use the alias dc instead. 
 In order to interact with breakpoints that you add to your applications you need to run the container in the foreground and attach to the container terminal. You do that like so:
 
 ```bash
+docker-compose stop <name of container>
 docker-compose run --rm --service-ports <name of container>
 ```
+
+## Hints and Tips
+* Make sure you are on the *master* branch. Develop is most likely unstable.
+* The first vagrant up after a destroy might have issues if you have a large number of apps. If it dies complaining about "cannot allocate memory", just reload and it will likely sort itself out.
+* By default it gives itself 4gb of RAM but you can override this with the VM_MEMORY windows environment variable. For example, if you have a 16gb machine it's safe to double it to 8192.
+* Make sure you `vagrant halt` before rebooting or shutting down your windows machine. Not doing this is effectively like pulling the plug and will almost certainly corrupt it.
+* `vagrant destroy` should be a last resort. Try `vagrant up --provision` (or `vagrant reload --provision`, if your vm is currently running) as that will clean out your app containers and recreate them. They are most likely to be the source of any corruption.

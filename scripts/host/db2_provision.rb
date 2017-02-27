@@ -11,7 +11,7 @@ def provision_db2(root_loc)
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
 
   docker_commands = []
-  docker_commands.push("docker-compose start db2")
+  docker_commands.push("docker-compose up --build -d db2")
 
   # Better not run anything until DB2 is ready to accept connections...
   docker_commands.push("echo Waiting for DB2 to finish initialising")
@@ -37,7 +37,10 @@ def provision_db2(root_loc)
           puts colorize_yellow("DB2 has previously been provisioned for #{appname}, skipping")
         else
           docker_commands.push("docker cp /vagrant/apps/#{appname}/fragments/db2-init-fragment.sql db2:/#{appname}-init.sql")
+          docker_commands.push("docker exec db2 bash -c 'chmod o+r /#{appname}-init.sql'")
           docker_commands.push("docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2 -tvf /#{appname}-init.sql'")
+          # Just in case a fragment hasn't disconnected from it's DB, let's do it now so the next fragment doesn't fail when doing it's CONNECT TO
+          docker_commands.push("docker exec -u db2inst1 db2 bash -c '~/sqllib/bin/db2 disconnect all'")
           prepared_one = true
           # Update the .commodities.yml to indicate that db2 has now been provisioned
           set_commodity_provision_status(root_loc, "#{appname}", "db2", true)
@@ -49,7 +52,7 @@ def provision_db2(root_loc)
   end
   if prepared_one
     # Now actually run the commands
-    system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
+    run_command("vagrant ssh -c \"" + docker_commands.join(" && ") + "\"")
   end
 end
 

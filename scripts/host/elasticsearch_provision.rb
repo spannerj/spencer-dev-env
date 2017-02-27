@@ -11,7 +11,7 @@ def provision_elasticsearch(root_loc)
   config = YAML.load_file("#{root_loc}/dev-env-project/configuration.yml")
 
   docker_commands = []
-  docker_commands.push("docker-compose start elasticsearch")
+  docker_commands.push("docker-compose up --build -d elasticsearch")
   # Better not run anything until elasticsearch is ready to accept connections...
   docker_commands.push("echo Waiting for elasticsearch to finish initialising")
   docker_commands.push("/vagrant/scripts/guest/docker/elasticsearch/wait-for-it.sh http://localhost:9200")
@@ -47,6 +47,6 @@ def provision_elasticsearch(root_loc)
   end
   if prepared_one
     # Now actually run the commands
-    system "vagrant ssh -c \"" + docker_commands.join(" && ") + "\""
+    run_command("vagrant ssh -c \"" + docker_commands.join(" && ") + "\"")
   end
 end

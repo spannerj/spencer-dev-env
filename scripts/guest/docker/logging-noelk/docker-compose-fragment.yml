@@ -1,0 +1,12 @@
+version: '2'
+services:
+  logstash:
+    container_name: logstash
+    build: /vagrant/scripts/guest/docker/logging/logstash
+    volumes:
+     - /vagrant/scripts/guest/docker/logging-noelk/logstash:/config-dir
+     - /vagrant/logs:/log-dir
+    ports:
+      - "25826:25826"
+    restart: on-failure
+    

@@ -21,6 +21,9 @@ def prepare_compose(root_loc)
     commodities = YAML.load_file("#{root_loc}/.commodities.yml")
     if commodities.key?("commodities")
       commodities["commodities"].each do |commodity_info|
+        # Special case - if the user has chosen to not have the full elk stack, tweak the compose file that gets added
+        commodity_info = 'logging-noelk' if commodity_info == 'logging' && File.read(LOGGING_CHOICE_FILE) == 'lite'
+        
         commodity_list.push("/vagrant/scripts/guest/docker/#{commodity_info}/docker-compose-fragment.yml")
       end
     end
