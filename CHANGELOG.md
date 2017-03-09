@@ -12,6 +12,7 @@
 * Allow machine to (eventually) start successfully even if internet is down (#34)
 * Update kernel and guest additions to the latest versions during provisioning/first up (#33)
 * Added `livelogs` alias, which allows you to see the logs of a given app as they occur in your console, even if they are also going to ELK.
+* Added `fullreset` alias, which allows you to completely wipe (including contents) and rebuild a container, such as postgres - or even scrap all of them, which is likely to be much quicker yet just as effective as a machine destroy
 
 ## 1.3.1.2
 
