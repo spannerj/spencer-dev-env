@@ -192,6 +192,7 @@ livelogs <name of container>                     -     view the logs of a contai
 exec <name of container> <command to execute>    -     execute a command in a running container
 run <options> <name of container> <command>      -     creates a new container and runs the command in it.
 remove <name of container>                       -     remove a container
+fullreset <name of container>                    -     Performs stop, remove then rebuild. Useful if a container (like a database) needs to be wiped. Remember to reset .commodities if you do though to ensure init fragments get rerun
 rebuild <name of container>                      -     rebuild a container and run it in the background
 bashin <name of container>                       -     bash in to a container
 unit-test <name of container>                    -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command). If you add -r it will output reports to the test-output folder.
@@ -231,4 +232,4 @@ docker-compose run --rm --service-ports <name of container>
 * The first vagrant up after a destroy might have issues if you have a large number of apps. If it dies complaining about "cannot allocate memory", just reload and it will likely sort itself out.
 * By default it gives itself 4gb of RAM but you can override this with the VM_MEMORY windows environment variable. For example, if you have a 16gb machine it's safe to double it to 8192.
 * Make sure you `vagrant halt` before rebooting or shutting down your windows machine. Not doing this is effectively like pulling the plug and will almost certainly corrupt it.
-* `vagrant destroy` should be a last resort. Try `vagrant up --provision` (or `vagrant reload --provision`, if your vm is currently running) as that will clean out your app containers and recreate them. They are most likely to be the source of any corruption.
+* `vagrant destroy` should be a last resort. Try `vagrant up --provision` (or `vagrant reload --provision`, if your vm is currently running) as that will clean out your app containers and recreate them. They are most likely to be the source of any corruption.

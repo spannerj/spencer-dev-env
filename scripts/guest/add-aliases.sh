@@ -57,6 +57,12 @@ function manage(){
     docker-compose exec ${1} python3 manage.py ${@:2}
 }
 
+function fullreset(){
+    docker-compose stop ${1}
+    docker-compose rm -v -f ${1}
+    docker-compose up --build -d ${1}
+}
+
 function alembic(){
     docker-compose exec ${1} bash -c 'cd /src && export SQL_USE_ALEMBIC_USER=yes && export SQL_PASSWORD=superroot && python3 manage.py db '"${@:2}"''
 }
@@ -75,6 +81,7 @@ function devenv-help(){
     run <options> <name of container> <command>      -     creates a new container and runs the command in it
     remove <name of container>                       -     remove a container
     rebuild <name of container>                      -     rebuild a container and run it in the background
+    fullreset <name of container>                    -     Performs stop, remove then rebuild. Useful if a container (like a database) needs to be wiped. Remember to reset .commodities if you do though to ensure init fragments get rerun
     bashin <name of container>                       -     bash in to a container
     unit-test <name of container> [-r]               -     run the unit tests for an application (this expects there to a be a Makefile with a unittest command).
                                                            if you add -r it will output reports to the test-output folder.

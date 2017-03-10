@@ -3,15 +3,16 @@
 ## v2.0.0
 
 * MAJOR - Due to memory issues when running many apps, the full ELK stack is now optional, via a question asked during provision. Extra memory will be allocated to the machine if it is chosen. Whether you run the stack or not, logs now also write to logs/log.txt for Kibana-less viewing
-* MAJOR - All base images are now prebuilt and stored on Docker Hub, pulled down during vagrant up. The Dockerfiles are now stored in their own repo (#37, #35, #30)
+* MAJOR - All base images are now prebuilt and stored on Docker Hub, pulled down during vagrant up. The Dockerfiles are now stored in their own repo (#37, #35, #30). Base image changes will no longer appear in these changelogs after this release
 * Added the ability for apps to change the hosts file of the machine running vagrant via `host-fragments.yml` (Thanks Andy Barnes) (#36)
-* Changed Python from a custom LR build to one provided by the IUS Community Project in all Python base images, to match changes made by webops
+* Changed Python base images from a custom LR build of Python3 to one provided by the IUS Community Project in all Python base images, to match changes made by webops
 * Added support for Elasticsearch v5 commodity (#39)
 * Updated Gradle to 3.3 in base Java images
 * Fixed DB2 provisioning issue if init SQL file has strict permissions
 * Allow machine to (eventually) start successfully even if internet is down (#34)
-* Update kernel and guest additions to the latest versions during provisioning/first up (#33)
+* Update kernel and guest additions to the latest versions during provisioning/first up (#33). This will require two manual reloads during the process (you will be prompted)
 * Added `livelogs` alias, which allows you to see the logs of a given app as they occur in your console, even if they are also going to ELK.
+* Added `fullreset` alias, which allows you to completely wipe (including contents) and rebuild a container, such as postgres - or even scrap all of them, which is likely to be much quicker yet just as effective as a machine destroy. Remember to reset .commodities if you do though to ensure init fragments get rerun
 
 ## 1.3.1.2
 
